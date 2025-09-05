@@ -190,6 +190,10 @@ function PhysicalExamCard(){
   return (
     <Card title="① 신체검사" subtitle="BCS 입력 → 자동 문구" right={<CopyBtn text={text} />}>
       <Row>
+        <Field label="체중 (kg)" hint="소수점 1자리 권장">
+          <input type="number" step="0.1" value={phys.weight} onChange={(e)=> setPhys({ ...phys, weight: e.target.value })}
+            className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500" placeholder="예: 4.2" />
+        </Field>
         <Field label={`BCS: ${phys.bcs}/9`} hint="1~9 슬라이더">
           <input type="range" min={1} max={9} value={phys.bcs} onChange={(e)=> setPhys({ ...phys, bcs: Number(e.target.value) })} className="w-full" />
           <div className="mt-2 text-sm text-slate-600">{getBCSText(phys.bcs)}</div>
