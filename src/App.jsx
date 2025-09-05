@@ -164,10 +164,10 @@ const DEFAULT_DENTAL_OPTS = {
   status: ["양호", "경미한 치주염 의심", "치주질환 의심", "악취/통증 호소", "발치 필요의심"],
   gingivitis: ["None", "Grade 1", "Grade 2", "Grade 3"],
   calculus: ["None", "Grade 1", "Grade 2", "Grade 3"],
-  fracture: ["없음", "의심", "확인"],
-  tr: ["의심 없음", "의심", "확인/치료 필요"],
+  fracture: ["없음", "의심", "확인/깨짐", "확인/신경노출"],
+  tr: ["의심 없음", "의심", "확인/모니터링","확인/치료 필요"],
   missing: ["없음", "의심", "확인"],
-  scaling: ["권장되지 않음", "경미한 권장", "강력한 권장"],
+  scaling: ["권장되지 않음", "경미한 권장", "강력한 권장","금일진행완료"],
 };
 function getTemplates(){ return loadLS(key.templates, {}); }
 function getBCSText(bcs){ const t = getTemplates().BCS_TEXT || DEFAULT_BCS_TEXT; return t[bcs] || DEFAULT_BCS_TEXT[bcs]; }
@@ -189,7 +189,7 @@ function PhysicalExamCard(){
   useEffect(()=> { saveLS(key.phys, phys); emitChange(); }, [phys]);
 
   return (
-    <Card title="① 신체검사" subtitle="BCS 입력 → 자동 문구" right={<CopyBtn text={text} />}>
+    <Card title="① 신체검사" subtitle="BCS 및 신체검사 소견 입력 → 자동 문구" right={<CopyBtn text={text} />}>
       {/* 단일 필드: 슬라이더 + 설명 (전체 너비) */}
       <Field label={`BCS: ${phys.bcs}/9`}>
         <input
@@ -205,9 +205,12 @@ function PhysicalExamCard(){
           {getBCSText(phys.bcs)}
         </div>
       </Field>
+      <Field label={'신체검사'}> 
+      </Field>
     </Card>
   );
 }
+
 
 /*********************************
  * 2) 치과 소견
