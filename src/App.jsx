@@ -165,7 +165,7 @@ const DEFAULT_DENTAL_OPTS = {
   gingivitis: ["None", "Grade 1", "Grade 2", "Grade 3"],
   calculus: ["None", "Grade 1", "Grade 2", "Grade 3"],
   fracture: ["없음", "의심", "확인/깨짐", "확인/신경노출"],
-  tr: ["의심 없음", "의심", "확인/모니터링","확인/치료 필요"],
+  tr: ["의심 없음", "의심", "확인/완전흡수","확인/모니터링","확인/치료 필요"],
   missing: ["없음", "의심", "확인"],
   scaling: ["권장되지 않음", "경미한 권장", "강력한 권장","금일진행완료"],
 };
