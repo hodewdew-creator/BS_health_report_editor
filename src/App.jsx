@@ -177,28 +177,40 @@ function getDentalOpts(){ return getTemplates().dentalOpts || DEFAULT_DENTAL_OPT
  * 1) 신체검사
  *********************************/
 const defaultPhys = { bcs: 5, note: "" };
-function makePhysText(p){
-  // trend 제거
-  const base = `${getBCSText(p.bcs)}`;
-  const extra = p.note?.trim() ? `\n- 메모: ${p.note.trim()}` : "";
-  return base + extra;
-}
 function PhysicalExamCard(){
   const [phys, setPhys] = useState(loadLS(key.phys, defaultPhys));
   const text = useMemo(()=> makePhysText(phys), [phys]);
+
   useEffect(()=> { saveLS(key.phys, phys); emitChange(); }, [phys]);
+
   return (
     <Card title="① 신체검사" subtitle="BCS 입력 → 자동 문구" right={<CopyBtn text={text} />}>
-      <Row>
-        <Field label={`BCS: ${phys.bcs}/9`} hint="1~9 슬라이더">
-          <input type="range" min={1} max={9} value={phys.bcs} onChange={(e)=> setPhys({ ...phys, bcs: Number(e.target.value) })} className="w-full" />
-          <div className="mt-2 text-sm text-slate-600">{getBCSText(phys.bcs)}</div>
+      {/* ✅ 슬라이더/설명: Row 제거 -> 전체 너비 */}
+      <Field label={`BCS: ${phys.bcs}/9`} hint="1~9 슬라이더">
+        <input
+          type="range"
+          min={1}
+          max={9}
+          value={phys.bcs}
+          onChange={(e)=> setPhys({ ...phys, bcs: Number(e.target.value) })}
+          className="w-full"
+        />
+        {/* ✅ 줄바꿈 유지 */}
+        <div className="mt-2 text-sm text-slate-600 whitespace-pre-wrap">
+          {getBCSText(phys.bcs)}
+        </div>
+      </Field>
+
+      {/* ✅ 미리보기 제거, 메모만 전체 너비 */}
+      <div className="mt-4">
+        <Field label="추가 메모(선택)">
+          <TextArea
+            value={phys.note}
+            onChange={(v)=> setPhys({ ...phys, note: v })}
+            rows={3}
+          />
         </Field>
-      </Row>
-      <Row>
-        <Field label="추가 메모(선택)"><TextArea value={phys.note} onChange={(v)=> setPhys({ ...phys, note: v })} rows={3} /></Field>
-        <Field label="미리보기"><TextArea value={text} onChange={()=>{}} rows={6} /></Field>
-      </Row>
+      </div>
     </Card>
   );
 }
