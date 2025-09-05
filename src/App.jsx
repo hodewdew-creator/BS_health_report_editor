@@ -261,20 +261,28 @@ function getDentalOpts(){ return getTemplates().dentalOpts || DEFAULT_DENTAL_OPT
 const defaultPhys = { bcs: 5, looks: {} };
 
 function makePhysText(p){
+  const NL = "
+";
   const base = getBCSText(p.bcs);
-  const chosen = (PHYS_LOOKS || []).filter(x => (p.looks && p.looks[x.title]));
+  const chosen = (PHYS_LOOKS || [])
+    .filter(x => (p.looks && p.looks[x.title]))
+    .map(x => x.desc);
   if (!chosen.length) return base;
-  const extra = chosen.map(x => x.desc).join("
-");
-  return base + "
-
-<육안검사>
-" + extra;
+  return [base, "", "<육안검사>", ...chosen].join(NL);
 }
+
 
 function PhysicalExamCard(){
   const [phys, setPhys] = useState(loadLS(key.phys, defaultPhys));
   const text = useMemo(()=> makePhysText(phys), [phys]);
+  const miniDesc = useMemo(
+  () => (PHYS_LOOKS || [])
+          .filter(x => (phys.looks && phys.looks[x.title]))
+          .map(x => x.desc)
+          .join("\n"),
+  [phys]
+);
+
 
   useEffect(()=> { saveLS(key.phys, phys); emitChange(); }, [phys]);
 
