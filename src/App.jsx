@@ -158,7 +158,6 @@ const DEFAULT_BCS_TEXT = {
 
   9: `⏹ 중증 비만 (BCS 9/9): 두꺼운 지방층으로 늑골(갈비뼈)이 촉진되지 않습니다. 과다한 지방이 허리, 얼굴, 사지에 있습니다.
 - 비만 상태입니다. 골관절염, 당뇨 등 관련한 질환 발생 가능성이 높으며, 주기적인 체중 측정과 체중조절이 시급합니다. 우선은 현 체중의 20%의 체중감량을 추천드립니다. 너무 급한 체중감량은 지방간 위험성이 있으니, 식이 조절 및 먹이퍼즐, 운동등을 통해 적정 속도의 감량을 추천드리며, 감량속도는 1주에 1% 이내가 권장됩니다. `,
-};
 
 const DEFAULT_DENTAL_OPTS = {
   status: ["양호", "경미한 치주염 의심", "치주질환 의심", "악취/통증 호소", "발치 필요의심"],
@@ -189,11 +188,16 @@ function PhysicalExamCard(){
   useEffect(()=> { saveLS(key.phys, phys); emitChange(); }, [phys]);
   return (
     <Card title="① 신체검사" subtitle="BCS 입력 → 자동 문구" right={<CopyBtn text={text} />}>
-      <Field>
+      <Row>
+        <Field label="체중 (kg)" hint="소수점 1자리 권장">
+          <input type="number" step="0.1" value={phys.weight} onChange={(e)=> setPhys({ ...phys, weight: e.target.value })}
+            className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500" placeholder="예: 4.2" />
+        </Field>
         <Field label={`BCS: ${phys.bcs}/9`} hint="1~9 슬라이더">
           <input type="range" min={1} max={9} value={phys.bcs} onChange={(e)=> setPhys({ ...phys, bcs: Number(e.target.value) })} className="w-full" />
           <div className="mt-2 text-sm text-slate-600">{getBCSText(phys.bcs)}</div>
-    </Field>
+        </Field>
+      </Row>
       <Row>
         <Field label="추가 메모(선택)"><TextArea value={phys.note} onChange={(v)=> setPhys({ ...phys, note: v })} rows={3} /></Field>
         <Field label="미리보기"><TextArea value={text} onChange={()=>{}} rows={6} /></Field>
