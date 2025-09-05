@@ -101,18 +101,38 @@ function CopyBtn({ text, label = "복사" }) { return (
  *********************************/
 function Header() {
   return (
-    <header className="sticky top-0 z-10 backdrop-blur bg-slate-50/70 border-b border-slate-200">
-      <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600" />
+    <header className="sticky top-0 z-10 backdrop-blur bg-slate-50/75 border-b border-slate-200">
+      <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+        <div className="flex items-center gap-3.5">
+          {/* 로고 */}
+          <img
+            src="/baeksan-logo.png"
+            alt="Baeksan Animal Hospital"
+            className="w-10 h-10 rounded-lg bg-white object-contain p-1 shadow-sm"
+          />
+          {/* 타이틀 */}
           <div>
-            <div className="text-base font-semibold">건강검진 보고서 에디터</div>
-            <div className="text-xs text-slate-500">백산동물병원 · 내부용</div>
+            <div className="text-lg md:text-xl font-semibold tracking-tight">
+              건강검진 보고서 에디터
+            </div>
+            <div className="text-sm text-slate-500">
+              백산동물병원 · 내부용
+            </div>
           </div>
         </div>
+
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-slate-100 text-slate-700 border border-slate-200">MVP</span>
-          <a href="#" onClick={(e)=>{ e.preventDefault(); localStorage.clear(); location.reload(); }} className="text-xs text-slate-500 hover:text-slate-700" title="모든 데이터(로컬저장) 초기화">초기화</a>
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-slate-100 text-slate-700 border border-slate-200">
+            MVP
+          </span>
+          <a
+            href="#"
+            onClick={(e)=>{ e.preventDefault(); localStorage.clear(); location.reload(); }}
+            className="text-xs text-slate-500 hover:text-slate-700"
+            title="모든 데이터(로컬저장) 초기화"
+          >
+            초기화
+          </a>
         </div>
       </div>
     </header>
