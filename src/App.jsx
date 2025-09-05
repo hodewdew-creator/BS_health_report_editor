@@ -161,7 +161,7 @@ const DEFAULT_BCS_TEXT = {
 };
 
 const DEFAULT_DENTAL_OPTS = {
-  status: ["양호", "경미한 치주염 의심", "치주질환 의심", "악취/통증 호소", "발치 필요의심"],
+  status: ["양호", "경미한염증", "심한염증/치료", "발치필요"],
   gingivitis: ["None", "Grade 1", "Grade 2", "Grade 3"],
   calculus: ["None", "Grade 1", "Grade 2", "Grade 3"],
   fracture: ["없음", "의심", "확인/깨짐", "확인/신경노출"],
