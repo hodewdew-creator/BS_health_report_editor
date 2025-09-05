@@ -205,10 +205,6 @@ function PhysicalExamCard(){
           {getBCSText(phys.bcs)}
         </div>
       </Field>
-
-<Field label="신체검사" className="mt-4">
-  {/* 내용 */}
-</Field>
     </Card>
   );
 }
@@ -219,13 +215,13 @@ function PhysicalExamCard(){
  *********************************/
 const defaultDental = {
   status: "양호",
-  gingivitis: "Grade 1",
-  calculus: "Grade 1",
+  gingivitis: "none",
+  calculus: "none",
   fracture: "없음",
   tr: "의심 없음",
   missing: "없음",
   scaling: "권장되지 않음",
-  wrap: "정기 치과검진 및 구강위생 관리를 권장합니다.",
+  wrap: "평소 치아 관련 증상여부 체크, 구강위생 관리(양치)를 권장드립니다.",
   note: "",
 };
 function makeDentalText(d){
