@@ -162,12 +162,12 @@ const DEFAULT_BCS_TEXT = {
 
 const DEFAULT_DENTAL_OPTS = {
   status: ["양호", "경미한 치주염 의심", "치주질환 의심", "악취/통증 호소", "발치 필요의심"],
-  gingivitis: ["None", "Grade 1", "Grade 2", "Grade 3", "Grade 4"],
-  calculus: ["None", "Grade 1", "Grade 2", "Grade 3", "Grade 4"],
+  gingivitis: ["None", "Grade 1", "Grade 2", "Grade 3"],
+  calculus: ["None", "Grade 1", "Grade 2", "Grade 3"],
   fracture: ["없음", "의심", "확인"],
   tr: ["의심 없음", "의심", "확인/치료 필요"],
   missing: ["없음", "의심", "확인"],
-  scaling: ["권장되지 않음", "경미 권장", "권장", "강력 권장 (마취하 치과진료)"],
+  scaling: ["권장되지 않음", "경미한 권장", "강력한 권장"],
 };
 function getTemplates(){ return loadLS(key.templates, {}); }
 function getBCSText(bcs){ const t = getTemplates().BCS_TEXT || DEFAULT_BCS_TEXT; return t[bcs] || DEFAULT_BCS_TEXT[bcs]; }
