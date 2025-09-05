@@ -188,7 +188,7 @@ function PhysicalExamCard(){
   const text = useMemo(()=> makePhysText(phys), [phys]);
   useEffect(()=> { saveLS(key.phys, phys); emitChange(); }, [phys]);
   return (
-    <Card title="① 신체검사" subtitle="체중/BCS 입력 → 자동 문구" right={<CopyBtn text={text} />}>
+    <Card title="① 신체검사" subtitle="BCS 입력 → 자동 문구" right={<CopyBtn text={text} />}>
       <Row>
         <Field label="체중 (kg)" hint="소수점 1자리 권장">
           <input type="number" step="0.1" value={phys.weight} onChange={(e)=> setPhys({ ...phys, weight: e.target.value })}
