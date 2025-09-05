@@ -169,6 +169,73 @@ const DEFAULT_DENTAL_OPTS = {
   missing: ["없음", "의심", "확인"],
   scaling: ["권장되지 않음", "경미한 권장", "강력한 권장","금일진행완료"],
 };
+
+const DENTAL_DESC = {
+  status: {
+    "양호": "전반적으로 구강내 상태 양호합니다.",
+    "경미한염증": "관리가 필요한 경미한 치과 소견이 있습니다.",
+    "심한염증/치료": "집중관리 및 치료를 요하는 치과 소견이 있습니다.",
+    "발치필요": "심한 염증 혹은 발치가 필요한 치아가 있습니다.",
+    "신체검사불가": "아이가 예민하여 면밀한 구강내 상태 관찰이 힘든 상태입니다. 구강내 통증호소, 침흘림 등 특이사항이 있으실 경우에는, 마취 후 육안 및 방사선 촬영 등을 추천드립니다."
+  },
+  gingivitis: {
+    "None": "정상적인 잇몸상태입니다.",
+    "none": "정상적인 잇몸상태입니다.",
+    "Grade 1": "경미한 부종 및 색변화, 경계부위의 미약한 치은염(잇몸염증)이 확인됩니다.",
+    "grade1": "경미한 부종 및 색변화, 경계부위의 미약한 치은염(잇몸염증)이 확인됩니다.",
+    "Grade 2": "중등도의 부종 및 잇몸부위 염증이 확인됩니다. 출혈이 있을 수 있습니다.",
+    "grade2": "중등도의 부종 및 잇몸부위 염증이 확인됩니다. 출혈이 있을 수 있습니다.",
+    "Grade 3": "심한 잇몸 부종 및 염증소견이 확인됩니다. 쉽게 출혈이 생길 수 있습니다.",
+    "grade3": "심한 잇몸 부종 및 염증소견이 확인됩니다. 쉽게 출혈이 생길 수 있습니다."
+  },
+  calculus: {
+    "None": "치석이 없는 상태입니다.",
+    "none": "치석이 없는 상태입니다.",
+    "Grade 1": "얇은 치석이 치아 표면의 1/3 이내로 확인됩니다.",
+    "grade1": "얇은 치석이 치아 표면의 1/3 이내로 확인됩니다.",
+    "Grade 2": "치석이 표면의 1/3~2/3 이내로 쌓인 형태로 확인됩니다.",
+    "grade2": "치석이 표면의 1/3~2/3 이내로 쌓인 형태로 확인됩니다.",
+    "Grade 3": "다량의 치석이 표면의 2/3 이상으로 뒤덮힌 형태로 확인됩니다.",
+    "grade3": "다량의 치석이 표면의 2/3 이상으로 뒤덮힌 형태로 확인됩니다."
+  },
+  fracture: {
+    "없음": "부러진 치아가 없습니다.",
+    "의심": "치아 끝이 약간 깨졌을 수 있으며, 정상일 가능성도 있습니다.",
+    "확인/깨짐": "부러진 치아가 있습니다. 육안상 신경이 지나가지 않는 끝부분(Enamel)의 깨짐으로 보여 치료를 바로 진행해야할 상태는 아닌것으로 생각됩니다. 병변의 변화나 통증이 있는지 모니터링 추천드립니다.",
+    "확인/신경노출": "부러진 치아가 있습니다. 육안상 치수(신경)가 노출된 것으로 의심되며, 치과방사선 촬영을 통한 뿌리 상태 체크가 추천됩니다. 결과에 따라 발치가 필요할 수 있습니다. 모니터링을 진행하실 경우에는 병변의 변화나 통증여부의 관찰이 필요합니다."
+  },
+  tr: {
+    "의심 없음": "고양이 치아흡수성 병변(FORL)이 의심되는 치아는 없습니다.",
+    "의심": "고양이 치아흡수성 병변(FORL)이 의심되는 치아가 있습니다.",
+    "확인/완전흡수": "고양이 치아흡수성 병변(FORL)이 의심되는 치아가 있으나, end stage로서 흡수가 거의 끝난 상태로 생각됩니다. 치아방사선 촬영을 통해 정확한 진행 정도 및 다른 치아의 추가적인 이환여부를 확인할 수 있습니다. 일반적으로 통증을 유발할 수 있습니다. 증상이 있고 뿌리가 남아있을 경우, 혹은 다른 치아도 의심되는 경우 추가 검사 및 발치에 대하여 상담해보시는 것을 추천드립니다.",
+    "확인/모니터링": "고양이 치아흡수성 병변(FORL)이 의심되는 치아가 있습니다. 치아방사선 촬영을 통해 정확한 진행 정도 및 다른 치아의 추가적인 이환여부를 확인할 수 있습니다. 일반적으로 통증을 유발할 수 있습니다. 증상이 있거나 추가 검사 및 발치에 대하여 상담해보시는 것을 추천드립니다.",
+    "확인/치료": "고양이 치아흡수성 병변(FORL)이 확인됩니다. 치아방사선 촬영을 통해 정확한 진행 정도 및 다른 치아의 추가적인 이환여부를 확인할 수 있습니다. 현재 통증 및 염증을 유발할 수 있는 것으로 보여, 추가 검사 및 발치에 대하여 상담해보시는 것을 추천드립니다.",
+    "확인/치료 필요": "고양이 치아흡수성 병변(FORL)이 확인됩니다. 치아방사선 촬영을 통해 정확한 진행 정도 및 다른 치아의 추가적인 이환여부를 확인할 수 있습니다. 현재 통증 및 염증을 유발할 수 있는 것으로 보여, 추가 검사 및 발치에 대하여 상담해보시는 것을 추천드립니다."
+  },
+  missing: {
+    "없음": "빠지거나 발치한 치아가 없습니다.",
+    "의심": "빠지거나 발치한 치아가 있을 수 있으나, 정확한 평가가 필요합니다.",
+    "확인": "빠지거나 발치한 치아가 있습니다."
+  },
+  scaling: {
+    "권장되지 않음": "현재는 스케일링은 필요없습니다.",
+    "경미한 권장": "스케일링이 시급한 정도는 아니나 진행해주시면 좋은 상태입니다.",
+    "경미한권장": "스케일링이 시급한 정도는 아니나 진행해주시면 좋은 상태입니다.",
+    "강력한 권장": "스케일링이 추천됩니다.",
+    "금일진행완료": "금일 스케일링으로 구강내 치석을 모두 제거한 상태입니다."
+  }
+};
+
+function _pickDentalDesc(group, value){
+  const table = (DENTAL_DESC[group] || {});
+  if (value in table) return table[value];
+  const v = (value || "").toLowerCase().replace(/\s+/g, "");
+  for (const k of Object.keys(table)){
+    if (k.toLowerCase().replace(/\s+/g, "") === v) return table[k];
+  }
+  return "";
+}
+
 function getTemplates(){ return loadLS(key.templates, {}); }
 function getBCSText(bcs){ const t = getTemplates().BCS_TEXT || DEFAULT_BCS_TEXT; return t[bcs] || DEFAULT_BCS_TEXT[bcs]; }
 function getDentalOpts(){ return getTemplates().dentalOpts || DEFAULT_DENTAL_OPTS; }
@@ -225,19 +292,18 @@ const defaultDental = {
   note: "",
 };
 function makeDentalText(d){
-  const parts = [
-    `전체 구강상태: ${d.status}.`,
-    `치은염: ${d.gingivitis}.`,
-    `치석: ${d.calculus}.`,
-    `치아 골절: ${d.fracture}.`,
-    `치아흡수성 병변(TR): ${d.tr}.`,
-    `결손치: ${d.missing}.`,
-    `스케일링: ${d.scaling}.`,
-    d.wrap ? d.wrap : "",
-  ];
-  const base = parts.filter(Boolean).join(" ");
-  const note = d.note?.trim() ? `\n- 메모: ${d.note.trim()}` : "";
-  return base + note;
+  const lines = [];
+  lines.push(_pickDentalDesc("status", d.status));
+  lines.push(_pickDentalDesc("gingivitis", d.gingivitis));
+  lines.push(_pickDentalDesc("calculus", d.calculus));
+  lines.push(_pickDentalDesc("fracture", d.fracture));
+  lines.push(_pickDentalDesc("tr", d.tr));
+  lines.push(_pickDentalDesc("missing", d.missing));
+  lines.push(_pickDentalDesc("scaling", d.scaling));
+  if (d.wrap?.trim()) lines.push(d.wrap.trim());
+  if (d.note?.trim()) lines.push(`- 메모: ${d.note.trim()}`);
+  return lines.filter(Boolean).join("
+");
 }
 function DentalFindingsCard(){
   const [d, setD] = useState(loadLS(key.dental, defaultDental));
@@ -549,3 +615,4 @@ function AboutPanel(){
     </Card>
   );
 }
+
