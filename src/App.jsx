@@ -288,7 +288,7 @@ const defaultDental = {
   tr: "의심 없음",
   missing: "없음",
   scaling: "권장되지 않음",
-  wrap: "평소 치아 관련 증상여부 체크, 구강위생 관리(양치)를 권장드립니다.",
+  wrap: "평소 주기적인 치아관리 (양치) 및 구강 체크를 잘 해주시기 바랍니다.",
   note: "",
 };
 function makeDentalText(d){
