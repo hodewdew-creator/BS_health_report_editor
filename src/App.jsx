@@ -434,7 +434,7 @@ function DentalFindingsCard(){
         </Field>
       </div>
       <div className="mt-3">
-        <Field label="추가 메모(선택)"><TextArea value={d.note} onChange={(v)=> setD({ ...d, note: v })} rows={3} /></Field>
+        <Field label="추가 코멘트(끝부분에 추가됩니다.)"><TextArea value={d.note} onChange={(v)=> setD({ ...d, note: v })} rows={3} /></Field>
       </div>
       <div className="mt-3">
         <Field label="미리보기"><TextArea value={text} onChange={()=>{}} rows={6} /></Field>
