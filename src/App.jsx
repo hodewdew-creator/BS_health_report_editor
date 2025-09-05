@@ -160,6 +160,21 @@ const DEFAULT_BCS_TEXT = {
 - 비만 상태입니다. 골관절염, 당뇨 등 관련한 질환 발생 가능성이 높으며, 주기적인 체중 측정과 체중조절이 시급합니다. 우선은 현 체중의 20%의 체중감량을 추천드립니다. 너무 급한 체중감량은 지방간 위험성이 있으니, 식이 조절 및 먹이퍼즐, 운동등을 통해 적정 속도의 감량을 추천드리며, 감량속도는 1주에 1% 이내가 권장됩니다. `,
 };
 
+const PHYS_LOOKS = [
+  { title: "정상", desc: `⏹ 신체검사상 특이적인 이상소견 확인되지 않았습니다.` },
+  { title: "피부종괴", desc: `⏹ [병변부위] 에서 papule(구진)/mass(종괴) 확인됩니다. 크기가 크고/작고 유동적/근육에고정  되어있으며 염증성/비염증성 으로, 세포검사를 추천드립니다/세포검사상 []가 의심됩니다. 크기가 커지거나 염증을 유발할 경우 제거가 추천됩니다.` },
+  { title: "비만세포종", desc: `⏹ MCT(Mast cell tumor, 비만세포종)가 의심됩니다. 현재 특이 소견은 없으나, 지속적으로 소양감(간지러움증) 및 상처가 생길 경우에는 수술적 제거를 추천드립니다. 복부 초음파 상에서 추가적인 복강내 종괴 의심 소견은 확인되지 않습니다.` },
+  { title: "과잉그루밍", desc: `⏹ 자가손상성(핥음, 긁음) 유발되었을 것으로 생각되는 병변이 [병변부위에서] 확인됩니다. 통증, 혹은 다른 질환 및 스트레스 요인이 증상을 유발했을 수 있으며, 정도가 심할 경우 처치 및 내복약 투약 여부를 상의해주세요.` },
+  { title: "하복부과잉그루밍", desc: `⏹ 스트레스 혹은 알러지성 소인으로 인한 하복부 과잉 그루밍이 의심됩니다. 환부  자체는 현재 치료를 요하지 않으나, 증상이 심해서 환묘복, 넥칼라 등으로 진정이 되지 않을 경우, 내복약 투여를 고려해 볼 수 있습니다.` },
+  { title: "발가락과잉그루밍", desc: `⏹ 발가락 과잉그루밍 관련하여, 현재로서는 피부에 치료를 요하는 병변이 확인되지는 않습니다. 알러지성 지간염, 습진(세균,곰팡이 감염), 스트레스성 과잉그루밍 가능성이 있습니다. 넥칼라 및 소독 등 보존적 치료를 먼저 진행해보시고, 발적, 가피(딱지) 등 개선후에도 다시 과잉그루밍이 확인될 경우에는 내복약 투약을 고려해볼 수 있습니다.` },
+  { title: "발바닥피부염", desc: `⏹ 부종 및 발적이 확인됩니다. 고양이 발바닥 피부염 (feline pododermaitis) 가능성이 가장 높다고 생각되며, 호산구성 육아종이나 다른 피부/면역계 질환 가능성도 배제되지 않습니다. 내복약 투약 반응에 따라 관리 해보시는 것을 추천드립니다.` },
+  { title: "발톱과각화증,궤양", desc: `⏹ 사지 발톱이 과도하게 길어져 있으며 과각화 및 변형이 확인되었고, 발바닥 패드의 각질 및 무통성 궤양성 병변이 확인되었습니다. Feline pododermatitis (발바닥피부염), Cutaneous horn(피각), pemphigus (천포창) 등 면역매개성 질환 가능성이 있으며, 감염(fungal infection 등)가능성도 배제되지 않은 상태입니다. 차후 진단을 위한 추가적인 검사를 고려해볼 수 있습니다. 발톱은 주기적으로 클리핑 해주세요` },
+  { title: "마른눈꼽-만성URTD", desc: `⏹ 현재는 비강쪽은 큰 이상은 없으며, 양쪽 눈 내안각쪽에 마른 노란 눈꼽만 소량 관찰되었습니다. URTD (고양이 상부 호흡기 질환) 이 만성적으로 있을 가능성이 높으며, 코가 삼출물로 많이 막히거나, 결막염 증세, 재채기 등이 동반될 경우에는 증상완화를 위해 내복약을 고려해보실 수 있습니다. 평소 습도 관리, 네뷸라이저 관리 등을 해주시는 것도 좋습니다.` },
+  { title: "만성URTD-단두종", desc: `⏹ 눈물량증가/ 신체검사상 눈물량 증가가 확인되며, 해부학적인 구조, 눈물관 폐색 원인이 있을 것으로 생각됩니다. 다만 호흡기증상 (재채기, 콧물)등이 동반될 경우, 허피스 감염이 동반되어 있을 수 있어, 치료여부를 상담하시는 것을 추천드립니다.` },
+  { title: "검갈색정상귀지", desc: `⏹ 검갈색귀지/ 양측 이도내 검갈색 귀지가 있는 편입니다. 염증, 부종 등 외이염 소견은 확인되지 않아, 종종 자극되지 않을 정도로 닦아주시면 됩니다.` }
+];
+
+
 const DEFAULT_DENTAL_OPTS = {
   status: ["양호", "경미한염증", "심한염증/치료", "발치필요","신체검사불가"],
   gingivitis: ["None", "Grade 1", "Grade 2", "Grade 3"],
@@ -243,10 +258,18 @@ function getDentalOpts(){ return getTemplates().dentalOpts || DEFAULT_DENTAL_OPT
 /*********************************
  * 1) 신체검사
  *********************************/
-const defaultPhys = { bcs: 5 };
+const defaultPhys = { bcs: 5, looks: {} };
 
 function makePhysText(p){
-  return getBCSText(p.bcs); // BCS 설명만
+  const base = getBCSText(p.bcs);
+  const chosen = (PHYS_LOOKS || []).filter(x => (p.looks && p.looks[x.title]));
+  if (!chosen.length) return base;
+  const extra = chosen.map(x => x.desc).join("
+");
+  return base + "
+
+<육안검사>
+" + extra;
 }
 
 function PhysicalExamCard(){
@@ -272,6 +295,43 @@ function PhysicalExamCard(){
           {getBCSText(phys.bcs)}
         </div>
       </Field>
+
+      {/* 육안검사: 작은 토글 버튼 리스트 */}
+      <div className="mt-4">
+        <div className="mb-1 text-sm font-medium text-slate-700">육안검사 선택</div>
+        <div className="flex flex-wrap gap-2">
+          {PHYS_LOOKS.map((opt) => {
+            const on = !!(phys.looks && phys.looks[opt.title]);
+            return (
+              <button
+                key={opt.title}
+                onClick={() => {
+                  const next = { ...(phys.looks||{}) };
+                  next[opt.title] = !on;
+                  setPhys({ ...phys, looks: next });
+                }}
+                className={
+                  "px-2 py-1 text-xs rounded-lg border active:scale-[.98] " +
+                  (on ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50")
+                }
+                title={opt.desc.replace(/\n/g, " ")}
+              >
+                {opt.title}
+              </button>
+            );
+          })}
+        </div>
+      
+        <div className="mt-2 text-xs text-slate-500 whitespace-pre-wrap">{miniDesc}</div>
+</div>
+
+      {/* 미리보기: BCS + 육안검사 합본 미리보기 */}
+      <div className="mt-3">
+        <Field label="미리보기">
+          <TextArea value={text} onChange={() => {}} rows={8} />
+        </Field>
+      </div>
+
     </Card>
   );
 }
