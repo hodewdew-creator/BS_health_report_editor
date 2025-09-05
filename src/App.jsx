@@ -176,36 +176,48 @@ function getDentalOpts(){ return getTemplates().dentalOpts || DEFAULT_DENTAL_OPT
 /*********************************
  * 1) 신체검사
  *********************************/
-const defaultPhys = { bcs: 5, note: "" };
+const defaultPhys = { bcs: 5 };
+
 function makePhysText(p){
-  // trend 제거
-  const base = `${getBCSText(p.bcs)}`;
-  const extra = p.note?.trim() ? `\n- 메모: ${p.note.trim()}` : "";
-  return base + extra;
+  // BCS 설명만 반환 (추가메모/체중 제거)
+  return getBCSText(p.bcs);
 }
+
 function PhysicalExamCard(){
   const [phys, setPhys] = useState(loadLS(key.phys, defaultPhys));
   const text = useMemo(()=> makePhysText(phys), [phys]);
+
   useEffect(()=> { saveLS(key.phys, phys); emitChange(); }, [phys]);
+
   return (
     <Card title="① 신체검사" subtitle="BCS 입력 → 자동 문구" right={<CopyBtn text={text} />}>
-      <Row>
-        <Field label="체중 (kg)" hint="소수점 1자리 권장">
-          <input type="number" step="0.1" value={phys.weight} onChange={(e)=> setPhys({ ...phys, weight: e.target.value })}
-            className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500" placeholder="예: 4.2" />
-        </Field>
+      {/* 좌우 2열: 좌(슬라이더+설명), 우(미리보기) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* 좌측: BCS 슬라이더 + 설명 */}
         <Field label={`BCS: ${phys.bcs}/9`} hint="1~9 슬라이더">
-          <input type="range" min={1} max={9} value={phys.bcs} onChange={(e)=> setPhys({ ...phys, bcs: Number(e.target.value) })} className="w-full" />
-          <div className="mt-2 text-sm text-slate-600">{getBCSText(phys.bcs)}</div>
+          <input
+            type="range"
+            min={1}
+            max={9}
+            value={phys.bcs}
+            onChange={(e)=> setPhys({ ...phys, bcs: Number(e.target.value) })}
+            className="w-full"
+          />
+          {/* 줄바꿈 유지 */}
+          <div className="mt-2 text-sm text-slate-600 whitespace-pre-wrap">
+            {getBCSText(phys.bcs)}
+          </div>
         </Field>
-      </Row>
-      <Row>
-        <Field label="추가 메모(선택)"><TextArea value={phys.note} onChange={(v)=> setPhys({ ...phys, note: v })} rows={3} /></Field>
-        <Field label="미리보기"><TextArea value={text} onChange={()=>{}} rows={6} /></Field>
-      </Row>
+
+        {/* 우측: 미리보기 */}
+        <Field label="미리보기">
+          <TextArea value={text} onChange={()=>{}} rows={10} />
+        </Field>
+      </div>
     </Card>
   );
 }
+
 
 /*********************************
  * 2) 치과 소견
