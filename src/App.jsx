@@ -176,7 +176,7 @@ function getDentalOpts(){ return getTemplates().dentalOpts || DEFAULT_DENTAL_OPT
 /*********************************
  * 1) 신체검사
  *********************************/
-const defaultPhys = { weight: "", bcs: 5, note: "" };
+const defaultPhys = { bcs: 5, note: "" };
 function makePhysText(p){
   // trend 제거
   const base = `${getBCSText(p.bcs)}`;
