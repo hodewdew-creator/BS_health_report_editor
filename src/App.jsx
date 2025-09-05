@@ -204,10 +204,11 @@ function PhysicalExamCard(){
         <div className="mt-2 text-sm text-slate-600 whitespace-pre-wrap">
           {getBCSText(phys.bcs)}
         </div>
+      </Field>
 
-      </Field>
-      <Field label={'신체검사'}> 
-      </Field>
+<Field label="신체검사" className="mt-4">
+  {/* 내용 */}
+</Field>
     </Card>
   );
 }
