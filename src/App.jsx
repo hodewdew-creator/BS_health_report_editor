@@ -261,8 +261,7 @@ function getDentalOpts(){ return getTemplates().dentalOpts || DEFAULT_DENTAL_OPT
 const defaultPhys = { bcs: 5, looks: {} };
 
 function makePhysText(p){
-  const NL = "
-";
+  const NL = String.fromCharCode(10);
   const base = getBCSText(p.bcs);
   const chosen = (PHYS_LOOKS || [])
     .filter(x => (p.looks && p.looks[x.title]))
