@@ -302,8 +302,7 @@ function makeDentalText(d){
   lines.push(_pickDentalDesc("scaling", d.scaling));
   if (d.wrap?.trim()) lines.push(d.wrap.trim());
   if (d.note?.trim()) lines.push(`- 메모: ${d.note.trim()}`);
-  return lines.filter(Boolean).join("
-");
+  return lines.filter(Boolean).join("\n");
 }
 function DentalFindingsCard(){
   const [d, setD] = useState(loadLS(key.dental, defaultDental));
@@ -615,4 +614,3 @@ function AboutPanel(){
     </Card>
   );
 }
-
