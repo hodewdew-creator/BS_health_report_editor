@@ -179,8 +179,7 @@ function getDentalOpts(){ return getTemplates().dentalOpts || DEFAULT_DENTAL_OPT
 const defaultPhys = { bcs: 5 };
 
 function makePhysText(p){
-  // BCS 설명만 반환 (추가메모/체중 제거)
-  return getBCSText(p.bcs);
+  return getBCSText(p.bcs); // BCS 설명만
 }
 
 function PhysicalExamCard(){
@@ -191,33 +190,24 @@ function PhysicalExamCard(){
 
   return (
     <Card title="① 신체검사" subtitle="BCS 입력 → 자동 문구" right={<CopyBtn text={text} />}>
-      {/* 좌우 2열: 좌(슬라이더+설명), 우(미리보기) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {/* 좌측: BCS 슬라이더 + 설명 */}
-        <Field label={`BCS: ${phys.bcs}/9`} hint="1~9 슬라이더">
-          <input
-            type="range"
-            min={1}
-            max={9}
-            value={phys.bcs}
-            onChange={(e)=> setPhys({ ...phys, bcs: Number(e.target.value) })}
-            className="w-full"
-          />
-          {/* 줄바꿈 유지 */}
-          <div className="mt-2 text-sm text-slate-600 whitespace-pre-wrap">
-            {getBCSText(phys.bcs)}
-          </div>
-        </Field>
-
-        {/* 우측: 미리보기 */}
-        <Field label="미리보기">
-          <TextArea value={text} onChange={()=>{}} rows={10} />
-        </Field>
-      </div>
+      {/* 단일 필드: 슬라이더 + 설명 (전체 너비) */}
+      <Field label={`BCS: ${phys.bcs}/9`}>
+        <input
+          type="range"
+          min={1}
+          max={9}
+          value={phys.bcs}
+          onChange={(e)=> setPhys({ ...phys, bcs: Number(e.target.value) })}
+          className="w-full"
+        />
+        {/* 줄바꿈 유지해서 설명 표시 */}
+        <div className="mt-2 text-sm text-slate-600 whitespace-pre-wrap">
+          {getBCSText(phys.bcs)}
+        </div>
+      </Field>
     </Card>
   );
 }
-
 
 /*********************************
  * 2) 치과 소견
