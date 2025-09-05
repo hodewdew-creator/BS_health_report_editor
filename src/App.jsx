@@ -182,6 +182,7 @@ function getDentalOpts(){ return getTemplates().dentalOpts || DEFAULT_DENTAL_OPT
  *********************************/
 const defaultPhys = { weight: "", bcs: 5, note: "" };
 function makePhysText(p){
+  const w = p.weight ? `${p.weight} kg` : "NA";
   const bcsLine = `BCS ${p.bcs}/9`;
   const trend = p.bcs <= 3 ? "체중 증가가 필요합니다." : p.bcs >= 7 ? "체중 감량이 필요합니다." : "현재 체형을 유지하세요.";
   const base = '${getBCSText(p.bcs)} ${trend}`;
