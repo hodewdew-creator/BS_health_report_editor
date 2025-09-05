@@ -645,9 +645,9 @@ function OutputPanel(){
   useEffect(()=>{ const h=()=> setTxt(compute()); window.addEventListener('vetreport-change',h); return ()=> window.removeEventListener('vetreport-change',h); },[]);
   useEffect(()=> saveLS(key.output, txt), [txt]);
   return (
-    <Card title="출력 (차트에 붙여넣기)" subtitle="전체 섹션 통합 문구" right={<CopyBtn text={txt} />}>
+    <Card title="최종 건강검진 소견 " subtitle="전체 섹션 문구 취합" right={<CopyBtn text={txt} />}>
       <TextArea value={txt} onChange={setTxt} rows={20} />
-      <div className="mt-2 text-xs text-slate-500">Tip: 섹션을 수정하면 이 영역이 자동 갱신됩니다. 수동 수정 후에도 복사 가능.</div>
+      <div className="mt-2 text-xs text-slate-500">Tip: 섹션을 수정하면 이 영역이 자동 갱신됩니다. (이 창에서 수동 수정도 가능).</div>
     </Card>
   );
 }
