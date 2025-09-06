@@ -17,24 +17,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # cache: 'npm'   # 🔴 잠시 비활성화 (lock 파일 없어서 에러)
 
       - name: Install deps
         run: npm install
 
-      - name: Build & Export
-        run: |
-          npm run build || true
-          # out 폴더가 없으면 강제로 export
-          if [ ! -d "out" ]; then
-            npx next export -o out
-          fi
-          # 최소 보장: index.html 체크
-          if [ ! -f "out/index.html" ]; then
-            echo "❌ 'out/index.html' 없음 → next export 실패."
-            echo "package.json의 build 스크립트에 'next export -o out' 포함하거나 next.config.js에서 output:'export' 확인 필요."
-            exit 1
-          fi
+      - name: Build
+        run: npm run build
 
       - name: Publish to user site repo
         uses: peaceiris/actions-gh-pages@v3
@@ -42,5 +30,5 @@ jobs:
           personal_token: ${{ secrets.GH_PAGES_TOKEN }}
           external_repository: hodewdew-creator/hodewdew-creator.github.io
           publish_branch: main
-          publish_dir: ./out
+          publish_dir: ./dist
           commit_message: "Deploy from BS_health_report_editor"
