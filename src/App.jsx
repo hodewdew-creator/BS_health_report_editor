@@ -304,6 +304,22 @@ function PhysicalExamCard(){
   const [phys, setPhys] = useState(loadLS(key.phys, defaultPhys));
   const [hover, setHover] = useState(""); // 호버 프리뷰
   const text = useMemo(()=> makePhysText(phys), [phys]);
+
+  // ⬇️ 추가: 아직 어떤 육안검사도 선택 안 되어 있으면 '정상'을 기본 체크(1회)
+  useEffect(() => {
+    const hasAny = phys?.looks && Object.values(phys.looks).some(Boolean);
+    const hasNormalTag = PHYS_LOOKS.some(p => p.title === "정상");
+    if (!hasAny && hasNormalTag) {
+      setPhys(prev => ({
+        ...prev,
+        looks: { ...(prev.looks || {}), "정상": true },
+      }));
+    }
+    // mount 시 한 번만 실행
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 변경사항 저장 + 우측 패널 갱신 이벤트
   useEffect(()=> { saveLS(key.phys, phys); emitChange(); }, [phys]);
 
   return (
@@ -348,7 +364,10 @@ function PhysicalExamCard(){
         </div>
         {/* 호버 프리뷰 */}
         {hover && (
-          <div className="mt-3 rounded-xl border text-sm p-3 whitespace-pre-wrap" style={{ backgroundColor: "#EFF6FF", borderColor: "#BFDBFE", color: "#0B3C7A" }}>
+          <div
+            className="mt-3 rounded-xl border text-sm p-3 whitespace-pre-wrap"
+            style={{ backgroundColor: "#EFF6FF", borderColor: "#BFDBFE", color: "#0B3C7A" }}
+          >
             {hover}
           </div>
         )}
@@ -362,6 +381,7 @@ function PhysicalExamCard(){
     </Card>
   );
 }
+
 
 /*********************************
  * 2) 치과 소견
