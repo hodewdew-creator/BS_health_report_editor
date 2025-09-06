@@ -149,7 +149,7 @@ function Header({ tab, onTab }) {
         {/* 섹션 탭 */}
         <div className="mt-3 flex items-center gap-2">
           <SegTab label="신체검사" active={tab==="physical"} onClick={()=> onTab("physical")} />
-          <SegTab label="치과" active={tab==="dental"} onClick={()=> onTab("dental")} />
+          <SegTab label="치과검사" active={tab==="dental"} onClick={()=> onTab("dental")} />
           <SegTab label="종합소견" active={tab==="overall"} onClick={()=> onTab("overall")} />
         </div>
       </div>
@@ -505,11 +505,11 @@ function OverallAssessmentCard(){
   }, []);
 
   const labelMap = {
-    physical: "신체검사",
-    blood: "혈액검사",
-    ua: "뇨검사(UA)",
-    xr: "방사선",
-    us: "복부초음파",
+    physical: "일반결과",
+    blood: "혈액검사(BA)",
+    ua: "소변검사(UA)",
+    xr: "방사선(X-ray)",
+    us: "초음파(Us)",
     disease: "특정질환",
   };
 
@@ -554,7 +554,7 @@ function OverallAssessmentCard(){
   }, [o.tagSel]);
 
   return (
-    <Card title="③ 종합 소견" subtitle="검사 선택 → 태그 클릭으로 상세 문구 추가 (마우스 올리면 프리뷰)" right={<CopyBtn text={preview} />}>
+    <Card title="③ 종합 소견" subtitle="검사 결과 분류 체크박스 선택하면 나타나는 태그를 클릭해주세요. 상세 문구 추가됩니다. " right={<CopyBtn text={preview} />}>
       {/* 체크박스 */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
         {Object.entries(labelMap).map(([k, v]) => (
