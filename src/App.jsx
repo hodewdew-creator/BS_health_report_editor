@@ -535,7 +535,7 @@ function OverallAssessmentCard(){
 
       {/* 자유 입력 — 특정질환 입력 제거, 추가안내만 전체너비 */}
       <div className="mt-3">
-        <Field label="추가 안내 문구 (선택)">
+        <Field label="추가 코멘트(끝부분에 추가됩니다.)">
           <TextArea
             value={o.addenda}
             onChange={(v)=> setO({ ...o, addenda: v })}
@@ -599,17 +599,16 @@ function PolisherPanel(){
  *********************************/
 function AboutPanel(){
   return (
-    <Card title="도움말" subtitle="설계 목표 & 사용 팁">
+    <Card title="도움말" subtitle="(help!)">
       <ul className="list-disc pl-5 space-y-1 text-sm text-slate-700">
         <li>모든 출력에는 <b>복사</b> 버튼이 있어 차트에 바로 붙여넣기 가능</li>
-        <li>데이터는 브라우저 <b>localStorage</b>에 저장되어 재방문 시 유지</li>
+        <li>신체검사(육안검사),종합소견 템플릿수정 : src/data/templates.json</li>
       </ul>
       <div className="mt-3 text-sm text-slate-500">
-        <b>다음 단계 제안</b>
+        <b>다음 단계 목표</b>
         <ol className="list-decimal pl-5 mt-1 space-y-1">
-          <li>복합소견 룰(조건부) 빌더 — 예: BCS≥7 & 치석 G3↑ → 자동 권고</li>
-          <li>혈액/뇨/영상 결과 템플릿 라이브러리 추가 (향후 선택)</li>
-          <li>PWA 패키징 — 오프라인 사용 & 바탕화면 설치</li>
+          <li> ChatGPT 문장다듬기 구현</li>
+
         </ol>
       </div>
     </Card>
