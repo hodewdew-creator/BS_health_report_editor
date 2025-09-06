@@ -325,7 +325,7 @@ const PHYS_LOOKS = [
 ];
 
 /*********************************
- * 3) 종합 소견 — 태그 팔레트 기능
+ * 3) 종합 소견 — 태그 팔레트 기능 (요청 반영)
  *********************************/
 
 /* 엑셀에서 변환해 온 템플릿(대분류/중분류/태그/내용) */
@@ -366,6 +366,9 @@ const OVERALL_TAGS = [
   {"cat":"마무리멘트","sub":"기타","tag":"종합-추가안내","text":"필요 시 추가 검사(영상/혈액/소변) 및 생활습관 교정(식이/운동/환경)을 안내드립니다. "}
 ];
 
+/* 각 행에 고유 id 부여 (중복 태그 구분) */
+const TAGS = OVERALL_TAGS.map((r, idx) => ({ ...r, _id: idx }));
+
 /* 중분류별 색상(연한/선택 시 진한) */
 const SUBCOLOR = {
   "신체검사": { "총평":"blue","혈압":"emerald","순응도":"amber","혈당":"violet" },
@@ -401,32 +404,34 @@ const PICK_TO_CAT = {
   disease: "특정질환",
 };
 
-/* 종합 소견 기본 상태 */
-const defaultOverall = {
+/* 종합 소견 기본 상태 (요청대로 diseaseNote 제거) */
 const defaultOverall = {
   picks: { physical: true, cbc: false, chem: false, ua: false, xr: false, us: false, disease: false },
-  addenda: "",      // ← 남겨둠
-  tagSel: {},       // 태그 선택 상태
+  addenda: "",
+  tagSel: {}, // { [id]: true }
 };
 
-// 기존 makeOverallText를 아래로 교체
-function makeOverallText(o/*, physText*/){
+/* 미리보기 조립 (요청사항 반영) */
+function makeOverallText(o /*, physText*/){
   const sel = o.picks || {};
   const lines = [];
 
-  // ❌ 신체검사(BSC) 자동 요약 제거 (아예 안 붙임)
-  // 나머지 기본 문구는 유지
+  // ❌ BCS 자동문구 제거 (신체검사 체크해도 기본 문구 없음)
+  // 기본 진단 라인 (요청 유지)
   if (sel.cbc)  lines.push("혈액검사(CBC): 이상 소견 확인/추적 필요 여부를 종합하여 안내드립니다.");
   if (sel.chem) lines.push("혈액화학(Chem): 간/신장/전해질 등 주요 지표를 종합 평가했습니다.");
   if (sel.ua)   lines.push("뇨검사(UA): 비중/침사/단백 등 소견 기반으로 해석했습니다.");
   if (sel.xr)   lines.push("방사선: 흉복부 영상에서 구조적 이상 여부를 검토했습니다.");
   if (sel.us)   lines.push("복부초음파: 장기별 에코 패턴과 크기 변화를 평가했습니다.");
 
-  // ✅ 태그 선택분: [대분류] 헤더 없이, 각 줄 앞에 '⏹ ' 접두사
-  const pickedTags = new Set(Object.keys(o.tagSel || {}).filter(t => o.tagSel[t]));
-  if (pickedTags.size) {
-    for (const row of OVERALL_TAGS) {
-      if (pickedTags.has(row.tag)) lines.push(`⏹ ${row.text.trim()}`);
+  // ✅ 태그 선택분: [대분류] 헤더 없이, 각 줄 앞에 '⏹ '
+  const picked = Object.keys(o.tagSel || {}).filter(id => o.tagSel[id]);
+  if (picked.length){
+    for (const t of TAGS){
+      if (picked.includes(String(t._id))){
+        const txt = (t.text || "").trim();
+        if (txt) lines.push(`⏹ ${txt}`);
+      }
     }
   }
 
@@ -437,10 +442,8 @@ function makeOverallText(o/*, physText*/){
 }
 
 function OverallAssessmentCard(){
-  const [phys] = useState(loadLS(key.phys, defaultPhys));
-  const physText = useMemo(()=> makePhysText(phys), [phys]);
   const [o, setO] = useState(loadLS(key.overall, defaultOverall));
-  const preview = useMemo(()=> makeOverallText(o, physText), [o, physText]);
+  const preview = useMemo(()=> makeOverallText(o), [o]);
   useEffect(()=> { saveLS(key.overall, o); emitChange(); }, [o]);
 
   // 선택된 대분류들(체크박스 → 대분류 이름셋)
@@ -454,18 +457,11 @@ function OverallAssessmentCard(){
   }, [o.picks]);
 
   // 태그 후보(선택된 대분류만)
-  const tagPool = useMemo(()=>{
-    return OVERALL_TAGS.filter(r => activeCats.has(r.cat));
-  }, [activeCats]);
+  const tagPool = useMemo(()=> TAGS.filter(r => activeCats.has(r.cat)), [activeCats]);
 
-  function togglePick(k){
-    setO(prev => ({ ...prev, picks: { ...prev.picks, [k]: !prev.picks[k] }}));
-  }
-  function toggleTag(tag){
-    setO(prev => ({ ...prev, tagSel: { ...prev.tagSel, [tag]: !prev.tagSel?.[tag] }}));
-  }
+  function togglePick(k){ setO(prev => ({ ...prev, picks: { ...prev.picks, [k]: !prev.picks[k] }})); }
+  function toggleTag(id){ setO(prev => ({ ...prev, tagSel: { ...prev.tagSel, [id]: !prev.tagSel?.[id] }})); }
 
-  // UI
   return (
     <Card title="③ 종합 소견" subtitle="검사 선택 → 태그 클릭으로 상세 문구 추가" right={<CopyBtn text={preview} />}>
       {/* 체크박스 */}
@@ -473,12 +469,12 @@ function OverallAssessmentCard(){
         {Object.entries(o.picks).map(([k,v])=> (
           <label key={k} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50">
             <input type="checkbox" checked={v} onChange={()=> togglePick(k)} />
-            <span className="text-sm">
-              {({
+            <span className="text-sm">{
+              ({
                 physical: "신체검사", cbc: "혈액검사(CBC)", chem: "혈액화학(Chem)",
                 ua: "뇨검사(UA)", xr: "방사선", us: "복부초음파", disease: "특정질환"
-              })[k]}
-            </span>
+              })[k]
+            }</span>
           </label>
         ))}
       </div>
@@ -489,15 +485,15 @@ function OverallAssessmentCard(){
           <div className="mb-1 text-sm font-medium text-slate-700">태그 선택</div>
           <div className="flex flex-wrap gap-2">
             {tagPool.map((row) => {
-              const picked = !!(o.tagSel && o.tagSel[row.tag]);
+              const picked = !!(o.tagSel && o.tagSel[row._id]);
               const color = (SUBCOLOR[row.cat] && SUBCOLOR[row.cat][row.sub]) || "blue";
               const style = COLOR_STYLE[color] || COLOR_STYLE.blue;
               return (
                 <button
-                  key={`${row.cat}:${row.tag}`}
+                  key={`${row._id}`}
                   className={`px-2 py-1 text-xs rounded-lg border active:scale-[.98] ${picked ? style.on : style.off}`}
                   title={`${row.cat} · ${row.sub}`}
-                  onClick={()=> toggleTag(row.tag)}
+                  onClick={()=> toggleTag(String(row._id))}
                 >
                   {row.tag}
                 </button>
@@ -508,17 +504,17 @@ function OverallAssessmentCard(){
         </div>
       )}
 
-// OverallAssessmentCard 내부의 "자유 입력" 섹션을 아래로 교체
-<div className="mt-3">
-  <Field label="추가 코멘트 (끝부분에 추가됩니다.)">
-    <TextArea
-      value={o.addenda}
-      onChange={(v)=> setO({ ...o, addenda: v })}
-      rows={6}
-      placeholder="식이/운동/재검 권장 등"
-    />
-  </Field>
-</div>
+      {/* 자유 입력 — 요청대로 특정질환 입력 제거, 추가안내만 전체너비 */}
+      <div className="mt-3">
+        <Field label="추가 안내 문구 (선택)">
+          <TextArea
+            value={o.addenda}
+            onChange={(v)=> setO({ ...o, addenda: v })}
+            rows={6}
+            placeholder="식이/운동/재검 권장 등"
+          />
+        </Field>
+      </div>
 
       {/* 미리보기 */}
       <div className="mt-3">
@@ -540,7 +536,7 @@ function OutputPanel(){
     const overall = loadLS(key.overall, defaultOverall);
     const physText = makePhysText(phys);
     const dentalText = makeDentalText(dental);
-    const overallText = makeOverallText(overall, physText);
+    const overallText = makeOverallText(overall); // ← physText 더 이상 전달하지 않음
     return `【신체검사】\n${physText}\n\n【치과 소견】\n${dentalText}\n\n【종합 소견】\n${overallText}`;
   };
   const [txt, setTxt] = useState(compute());
