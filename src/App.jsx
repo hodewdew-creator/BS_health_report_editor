@@ -599,7 +599,7 @@ function PolisherPanel(){
  *********************************/
 function AboutPanel(){
   return (
-    <Card title="도움말" subtitle="(help!)">
+    <Card title="도움말" subtitle="(25.9.6)">
       <ul className="list-disc pl-5 space-y-1 text-sm text-slate-700">
         <li>모든 출력에는 <b>복사</b> 버튼이 있어 차트에 바로 붙여넣기 가능</li>
         <li>신체검사(육안검사),종합소견 템플릿수정 : src/data/templates.json</li>
