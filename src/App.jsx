@@ -411,18 +411,12 @@ const defaultOverall = {
   tagSel: {}, // { [id]: true }
 };
 
-/* 미리보기 조립 (요청사항 반영) */
+// 기존 makeOverallText를 ↓ 이걸로 교체
 function makeOverallText(o /*, physText*/){
   const sel = o.picks || {};
   const lines = [];
 
-  // ❌ BCS 자동문구 제거 (신체검사 체크해도 기본 문구 없음)
-  // 기본 진단 라인 (요청 유지)
-  if (sel.cbc)  lines.push("혈액검사(CBC): 이상 소견 확인/추적 필요 여부를 종합하여 안내드립니다.");
-  if (sel.chem) lines.push("혈액화학(Chem): 간/신장/전해질 등 주요 지표를 종합 평가했습니다.");
-  if (sel.ua)   lines.push("뇨검사(UA): 비중/침사/단백 등 소견 기반으로 해석했습니다.");
-  if (sel.xr)   lines.push("방사선: 흉복부 영상에서 구조적 이상 여부를 검토했습니다.");
-  if (sel.us)   lines.push("복부초음파: 장기별 에코 패턴과 크기 변화를 평가했습니다.");
+  // ✅ 대분류 기본 설명줄 전부 삭제 (아무 것도 push 안 함)
 
   // ✅ 태그 선택분: [대분류] 헤더 없이, 각 줄 앞에 '⏹ '
   const picked = Object.keys(o.tagSel || {}).filter(id => o.tagSel[id]);
@@ -434,6 +428,13 @@ function makeOverallText(o /*, physText*/){
       }
     }
   }
+
+  // ✅ 추가 안내 (있을 때만)
+  if (o.addenda?.trim()) lines.push(`추가 안내: ${o.addenda.trim()}`);
+
+  return lines.join("\n");
+}
+
 
   // ✅ 추가 안내 (있을 때만)
   if (o.addenda?.trim()) lines.push(`추가 안내: ${o.addenda.trim()}`);
