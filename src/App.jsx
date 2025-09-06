@@ -583,7 +583,7 @@ function PolisherPanel(){
   const [out, setOut] = useState("");
   function tidy(text){ return text.replace(/\s+\./g, ".").replace(/\s{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim(); }
   return (
-    <Card title="문장 다듬기" subtitle="간단한 공백/줄바꿈 정리">
+    <Card title="GPT 문장 다듬기" subtitle="간단한 공백/줄바꿈 정리">
       <Field label="원문"><TextArea value={input} onChange={setInput} rows={6} placeholder="자유 입력" /></Field>
       <div className="mt-2 flex items-center gap-2">
         <button onClick={()=> setOut(tidy(input))} className="rounded-xl bg-slate-900 text-white px-4 py-2">문장 다듬기</button>
