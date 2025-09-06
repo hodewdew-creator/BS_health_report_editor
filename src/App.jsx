@@ -1,15 +1,11 @@
-
 import React, { useEffect, useMemo, useState } from "react";
 import templates from "./data/templates.json";
 
 /**
- * App.jsx — UI Polish v4
- * - BRAND color: toned-down hospital blue (#0F5E9C) applied to active tabs/chips
- * - Overall(종합소견) hover preview moved between tags and addenda (no jumping)
- * - Addenda textarea rows=3
- * - Dental preview rows=10
- * - OutputPanel collapsible
- * - Darker typography for tag headings/labels
+ * App.jsx — UI Polish v4.1
+ * - OutputPanel(최종 건강검진 소견): 기본 접힘
+ * - AboutPanel(도움말): 기본 접힘 + 토글 버튼
+ * - (v4 포함 사항 유지) 톤다운 브랜드 컬러, 안정된 프리뷰 위치/높이, 라벨 가독성 강화 등
  */
 
 // ===== Brand color (adjust here if 병원 컬러 변경) =====
@@ -447,7 +443,7 @@ function DentalFindingsCard(){
 }
 
 /*********************************
- * 3) 종합 소견 — 태그 팔레트(검색/그룹/트레이) + Stable Hover Preview
+ * 3) 종합 소견 — 태그 팔레트(검색/그룹/트레이)
  *********************************/
 
 const OVERALL_TAGS = templates.overall;
@@ -467,7 +463,6 @@ const defaultOverall = {
 
 function makeOverallText(o){
   const lines = [];
-  // 태그 선택분: [대분류] 헤더 없이, 각 줄 앞 '⏹ '
   const picked = Object.keys(o.tagSel || {}).filter(id => o.tagSel[id]);
   if (picked.length){
     for (const t of TAGS){
@@ -477,7 +472,6 @@ function makeOverallText(o){
       }
     }
   }
-  // 추가 안내 (있을 때만)
   if (o.addenda?.trim()) lines.push(`추가 안내: ${o.addenda.trim()}`);
   return clampBlanks(lines.join("\n"));
 }
@@ -536,7 +530,7 @@ function OverallAssessmentCard(){
   }, [o.tagSel]);
 
   return (
-    <Card title="③ 종합 소견" subtitle="검사 선택 → 태그 클릭으로 상세 문구 추가 (마우스 올리면 프리뷰)" right={<CopyBtn text={preview} />}>
+    <Card title="③ 종합 소견" subtitle="검사 선택 → 태그 클릭으로 상세 문구 추가" right={<CopyBtn text={preview} />}>
       {/* 체크박스 */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
         {Object.entries(o.picks).map(([k,v])=> (
@@ -602,7 +596,7 @@ function OverallAssessmentCard(){
         </div>
       )}
 
-      {/* (이곳) 호버 프리뷰 — 태그와 추가안내 사이, 높이 안정화 */}
+      {/* (이곳) 호버 프리뷰 — 태그와 추가안내 사이, 고정영역 */}
       <div className="mt-4 rounded-xl border text-sm p-3 whitespace-pre-wrap transition-all"
            style={{ minHeight: hover ? "64px" : "0px", backgroundColor: hover ? "#FFF7ED" : "transparent",
                     borderColor: hover ? "#FED7AA" : "transparent", color: "#7C2D12" }}>
@@ -632,7 +626,7 @@ function OverallAssessmentCard(){
 }
 
 /*********************************
- * 우측 패널: 출력 & 폴리셔
+ * 우측 패널: 출력 & 폴리셔 & 도움말(접기 기본)
  *********************************/
 function OutputPanel(){
   const compute = () => {
@@ -643,11 +637,10 @@ function OutputPanel(){
     const H1 = (s)=> `【${s}】`;
     const join = (...parts)=> clampBlanks(parts.filter(Boolean).join("\n\n"));
 
-    const physText = makePhysText(phys);      // BCS + (선택 시) <육안검사> 블록
+    const physText = makePhysText(phys);
     const dentalText = makeDentalText(dental);
     const overallText = makeOverallText(overall);
 
-    // 실제 줄바꿈(\n) 사용 — 이전 버전의 "\\n" 문제 수정
     return join(
       `${H1("신체검사")}\n${physText}`,
       `${H1("치과 소견")}\n${dentalText}`,
@@ -656,7 +649,7 @@ function OutputPanel(){
   };
 
   const [txt, setTxt] = useState(compute());
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false); // 기본 접힘
   useEffect(()=>{
     const h=()=> setTxt(compute());
     window.addEventListener('vetreport-change',h);
@@ -698,21 +691,32 @@ function PolisherPanel(){
   );
 }
 function AboutPanel(){
+  const [open, setOpen] = useState(false); // 기본 접힘
   return (
-    <Card title="도움말" subtitle="설계 목표 & 사용 팁">
-      <ul className="list-disc pl-5 space-y-1 text-sm text-slate-900">
-        <li>상단 탭 대비를 높여 가독성을 개선했습니다.</li>
-        <li>종합소견 프리뷰는 태그 아래·추가안내 위에 고정되어 레이아웃이 흔들리지 않습니다.</li>
-        <li>우측 결과 패널은 접기/펼치기가 가능해 집중이 쉬워요.</li>
-      </ul>
-      <div className="mt-3 text-sm text-slate-800">
-        <b>다음 단계 제안</b>
-        <ol className="list-decimal pl-5 mt-1 space-y-1">
-          <li>태그 즐겨찾기(상위 노출)</li>
-          <li>내보내기 템플릿(병원 로고/포맷) PDF</li>
-          <li>PWA 패키징 — 오프라인 사용 & 바탕화면 설치</li>
-        </ol>
-      </div>
+    <Card
+      title="도움말"
+      subtitle="설계 목표 & 사용 팁"
+      right={<button onClick={()=> setOpen(o=>!o)} className="rounded-xl border border-slate-300 px-3 py-1.5 text-sm text-slate-900">{open ? "접기" : "펼치기"}</button>}
+    >
+      {open ? (
+        <>
+          <ul className="list-disc pl-5 space-y-1 text-sm text-slate-900">
+            <li>상단 탭 대비를 높여 가독성을 개선했습니다.</li>
+            <li>종합소견 프리뷰는 태그 아래·추가안내 위에 고정되어 레이아웃이 흔들리지 않습니다.</li>
+            <li>우측 결과 패널은 접기/펼치기가 가능해 집중이 쉬워요.</li>
+          </ul>
+          <div className="mt-3 text-sm text-slate-800">
+            <b>다음 단계 제안</b>
+            <ol className="list-decimal pl-5 mt-1 space-y-1">
+              <li>태그 즐겨찾기(상위 노출)</li>
+              <li>내보내기 템플릿(병원 로고/포맷) PDF</li>
+              <li>PWA 패키징 — 오프라인 사용 & 바탕화면 설치</li>
+            </ol>
+          </div>
+        </>
+      ) : (
+        <div className="text-xs text-slate-700">접힌 상태입니다. “펼치기”를 눌러 도움말을 확인하세요.</div>
+      )}
     </Card>
   );
 }
