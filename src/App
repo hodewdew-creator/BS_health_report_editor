@@ -2,12 +2,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import templates from "./data/templates.json";
 
 /**
- * UI Polish Notes (2025-09):
- * - 상단 섹션 탭(신체검사/치과/종합소견)으로 좌측 패널 한 화면씩만 표시 → 시각적 밀도↓
- * - 우측 결과 패널 sticky 고정(top-24) → 스크롤 시에도 항상 보임
- * - 종합소견: 태그 검색, 선택 태그 트레이, 중분류별 그룹(라벨만, 소프트 톤) → 탐색성↑
- * - 태그 버튼 색상은 절제(연한 톤/선택 시 진한) → 색 과포화↓
- * - 기존 동작(접두사 ⏹, 대분류 설명 제거, [대분류] 헤더 미표시 등) 유지
+ * App.jsx — UI Polish v3 + Hover Preview
+ * - 더 또렷한 탭/텍스트(blue-600, slate-700)
+ * - 최종 소견: 실제 줄바꿈(\n)로 출력, 섹션 제목 통일(【…】)
+ * - 태그 호버 프리뷰: 신체검사/종합소견 태그 위에 마우스를 올리면 즉시 미리보기
  */
 
 export default function App() {
@@ -17,7 +15,7 @@ export default function App() {
   useEffect(()=> { try { localStorage.setItem("ui_tab", tab); } catch {} }, [tab]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-slate-50 text-slate-900 antialiased">
       <Header tab={tab} onTab={setTab} />
       <main className="mx-auto max-w-6xl p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* 좌측: 선택된 섹션만 렌더 */}
@@ -61,15 +59,23 @@ function loadLS(k, fallback) {
 function emitChange(){
   try { window.dispatchEvent(new Event('vetreport-change')); } catch {}
 }
+function clampBlanks(s){
+  // 연속 개행 3줄 이상 → 2줄로 축소, 앞뒤 공백 정리
+  return (s || "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .trim();
+}
 
 function Card({ title, subtitle, children, right }) {
   return (
     <section className="bg-white rounded-2xl shadow-sm border border-slate-200">
       <div className="flex items-start justify-between gap-3 px-5 py-4 border-b border-slate-100">
         <div>
-          <h2 className="text-lg font-semibold">{title}</h2>
+          <h2 className="text-lg font-semibold text-slate-800">{title}</h2>
           {subtitle ? (
-            <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>
+            <p className="text-sm text-slate-600 mt-0.5">{subtitle}</p>
           ) : null}
         </div>
         <div>{right}</div>
@@ -80,16 +86,16 @@ function Card({ title, subtitle, children, right }) {
 }
 function Field({ label, children, hint }) { return (
   <label className="block">
-    <div className="mb-1 text-sm font-medium text-slate-700">{label}</div>
+    <div className="mb-1 text-sm font-medium text-slate-800">{label}</div>
     {children}
-    {hint ? <div className="mt-1 text-xs text-slate-500">{hint}</div> : null}
+    {hint ? <div className="mt-1 text-xs text-slate-600">{hint}</div> : null}
   </label>
 ); }
 function TextArea({ value, onChange, rows = 5, placeholder }) { return (
-  <textarea className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 resize-y" rows={rows} value={value} onChange={(e)=> onChange(e.target.value)} placeholder={placeholder} />
+  <textarea className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 resize-y text-slate-900" rows={rows} value={value} onChange={(e)=> onChange(e.target.value)} placeholder={placeholder} />
 ); }
 function CopyBtn({ text, label = "복사" }) { return (
-  <button onClick={async ()=>{ try { await navigator.clipboard.writeText(text || ""); } catch {} }} className="rounded-xl border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 active:scale-[.99]">{label}</button>
+  <button onClick={async ()=>{ try { await navigator.clipboard.writeText(text || ""); } catch {} }} className="rounded-xl border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 active:scale-[.99] text-slate-800">{label}</button>
 ); }
 
 /*********************************
@@ -97,7 +103,7 @@ function CopyBtn({ text, label = "복사" }) { return (
  *********************************/
 function Header({ tab, onTab }) {
   return (
-    <header className="sticky top-0 z-10 backdrop-blur bg-slate-50/75 border-b border-slate-200">
+    <header className="sticky top-0 z-10 backdrop-blur bg-slate-50/85 border-b border-slate-200">
       <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3.5">
@@ -107,10 +113,10 @@ function Header({ tab, onTab }) {
               className="w-10 h-10 rounded-lg bg-white object-contain p-1 shadow-sm"
             />
             <div>
-              <div className="text-lg md:text-xl font-semibold tracking-tight">
+              <div className="text-lg md:text-xl font-semibold tracking-tight text-slate-900">
                 건강검진 보고서 에디터
               </div>
-              <div className="text-sm text-slate-500">
+              <div className="text-sm text-slate-700">
                 백산동물병원 · 내부용
               </div>
             </div>
@@ -123,7 +129,7 @@ function Header({ tab, onTab }) {
             <a
               href="#"
               onClick={(e)=>{ e.preventDefault(); localStorage.clear(); location.reload(); }}
-              className="text-xs text-slate-500 hover:text-slate-700"
+              className="text-xs text-slate-700 hover:text-slate-900"
               title="모든 데이터(로컬저장) 초기화"
             >
               초기화
@@ -146,10 +152,10 @@ function SegTab({ label, active, onClick }){
     <button
       onClick={onClick}
       className={
-        "px-3 py-1.5 rounded-lg border text-sm transition " +
+        "px-3.5 py-2 rounded-lg border text-sm md:text-base font-semibold transition " +
         (active
-          ? "bg-slate-900 text-white border-slate-900 shadow-sm"
-          : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50")
+          ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+          : "bg-white text-slate-800 border-slate-300 hover:bg-slate-50")
       }
     >
       {label}
@@ -158,7 +164,7 @@ function SegTab({ label, active, onClick }){
 }
 function Footer(){
   return (
-    <footer className="py-6 text-center text-xs text-slate-500">
+    <footer className="py-6 text-center text-xs text-slate-600">
       <div className="mx-auto max-w-6xl px-4">
         © {new Date().getFullYear()} Vet Report Tools · 로컬에서 동작(데이터: localStorage)
       </div>
@@ -230,6 +236,7 @@ function makePhysText(p){
 
 function PhysicalExamCard(){
   const [phys, setPhys] = useState(loadLS(key.phys, defaultPhys));
+  const [hover, setHover] = useState(""); // 호버 프리뷰
   const text = useMemo(()=> makePhysText(phys), [phys]);
   useEffect(()=> { saveLS(key.phys, phys); emitChange(); }, [phys]);
 
@@ -244,19 +251,21 @@ function PhysicalExamCard(){
           onChange={(e)=> setPhys({ ...phys, bcs: Number(e.target.value) })}
           className="w-full"
         />
-        <div className="mt-2 text-sm text-slate-600 whitespace-pre-wrap">
+        <div className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">
           {getBCSText(phys.bcs)}
         </div>
       </Field>
 
       <div className="mt-4">
-        <div className="mb-1 text-sm font-medium text-slate-700">육안검사 선택</div>
+        <div className="mb-1 text-sm font-medium text-slate-800">육안검사 선택</div>
         <div className="flex flex-wrap gap-2">
           {PHYS_LOOKS.map((opt) => {
             const on = !!(phys.looks && phys.looks[opt.title]);
             return (
               <button
                 key={opt.title}
+                onMouseEnter={()=> setHover(opt.desc)}
+                onMouseLeave={()=> setHover("")}
                 onClick={() => {
                   const next = { ...(phys.looks || {}) };
                   next[opt.title] = !on;
@@ -265,8 +274,8 @@ function PhysicalExamCard(){
                 className={
                   "px-2 py-1 text-xs rounded-lg border active:scale-[.98] " +
                   (on
-                    ? "bg-slate-900 text-white border-slate-900"
-                    : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50")
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-slate-800 border-slate-300 hover:bg-slate-50")
                 }
                 title={opt.desc}
               >
@@ -275,6 +284,12 @@ function PhysicalExamCard(){
             );
           })}
         </div>
+        {/* 호버 프리뷰 */}
+        {hover && (
+          <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 text-blue-900 text-sm p-3 whitespace-pre-wrap">
+            {hover}
+          </div>
+        )}
       </div>
 
       <div className="mt-3">
@@ -356,7 +371,7 @@ function makeDentalText(d){
   lines.push(_pickDentalDesc("scaling", d.scaling));
   if (d.wrap?.trim()) lines.push(d.wrap.trim());
   if (d.note?.trim()) lines.push(`- 추가 코멘트: ${d.note.trim()}`);
-  return lines.filter(Boolean).join("\n");
+  return clampBlanks(lines.filter(Boolean).join("\n"));
 }
 const defaultDental = {
   status: "양호",
@@ -428,7 +443,7 @@ function DentalFindingsCard(){
 }
 
 /*********************************
- * 3) 종합 소견 — 태그 팔레트(검색/그룹/트레이)
+ * 3) 종합 소견 — 태그 팔레트(검색/그룹/트레이) + Hover Preview
  *********************************/
 
 const OVERALL_TAGS = templates.overall;
@@ -436,8 +451,8 @@ const TAGS = OVERALL_TAGS.map((r, idx) => ({ ...r, _id: idx }));
 
 // 소프트 톤 클래스
 const CHIP = {
-  off: "bg-white text-slate-700 border-slate-300 hover:bg-slate-50",
-  on:  "bg-slate-900 text-white border-slate-900",
+  off: "bg-white text-slate-800 border-slate-300 hover:bg-slate-50",
+  on:  "bg-blue-600 text-white border-blue-600",
 };
 
 const defaultOverall = {
@@ -465,12 +480,13 @@ function makeOverallText(o){
   // 추가 안내 (있을 때만)
   if (o.addenda?.trim()) lines.push(`추가 안내: ${o.addenda.trim()}`);
 
-  return lines.join("\n");
+  return clampBlanks(lines.join("\n"));
 }
 
 function OverallAssessmentCard(){
   const [o, setO] = useState(loadLS(key.overall, defaultOverall));
   const [q, setQ] = useState(""); // 검색어
+  const [hover, setHover] = useState(""); // 호버 프리뷰
   const preview = useMemo(()=> makeOverallText(o), [o]);
   useEffect(()=> { saveLS(key.overall, o); emitChange(); }, [o]);
 
@@ -521,13 +537,13 @@ function OverallAssessmentCard(){
   }, [o.tagSel]);
 
   return (
-    <Card title="③ 종합 소견" subtitle="검사 선택 → 태그 클릭으로 상세 문구 추가" right={<CopyBtn text={preview} />}>
+    <Card title="③ 종합 소견" subtitle="검사 선택 → 태그 클릭으로 상세 문구 추가 (마우스 올리면 프리뷰)" right={<CopyBtn text={preview} />}>
       {/* 체크박스 */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
         {Object.entries(o.picks).map(([k,v])=> (
           <label key={k} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50">
             <input type="checkbox" checked={v} onChange={()=> togglePick(k)} />
-            <span className="text-sm">{labelMap[k]}</span>
+            <span className="text-sm text-slate-800">{labelMap[k]}</span>
           </label>
         ))}
       </div>
@@ -540,17 +556,24 @@ function OverallAssessmentCard(){
           value={q}
           onChange={(e)=> setQ(e.target.value)}
         />
-        <span className="text-xs text-slate-500">{filtered.length}개</span>
+        <span className="text-xs text-slate-700">{filtered.length}개</span>
       </div>
+
+      {/* 호버 프리뷰 */}
+      {hover && (
+        <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-sm p-3 whitespace-pre-wrap">
+          {hover}
+        </div>
+      )}
 
       {/* 선택된 태그 트레이 */}
       {selectedObjs.length > 0 && (
         <div className="mt-3">
-          <div className="text-xs text-slate-500 mb-1">선택된 태그</div>
+          <div className="text-xs text-slate-600 mb-1">선택된 태그</div>
           <div className="flex flex-wrap gap-2">
             {selectedObjs.map(r => (
               <button key={r._id} onClick={()=> removeTag(String(r._id))}
-                className="px-2 py-1 text-xs rounded-lg border bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200">
+                className="px-2 py-1 text-xs rounded-lg border bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200">
                 {r.tag} <span className="ml-1 opacity-70">✕</span>
               </button>
             ))}
@@ -563,13 +586,15 @@ function OverallAssessmentCard(){
         <div className="mt-4 space-y-3">
           {grouped.map(([sub, rows]) => (
             <div key={sub}>
-              <div className="text-[11px] uppercase tracking-wide text-slate-500 mb-1">{sub}</div>
+              <div className="text-[11px] uppercase tracking-wide text-slate-600 mb-1">{sub}</div>
               <div className="flex flex-wrap gap-2">
                 {rows.map(row => {
                   const picked = !!(o.tagSel && o.tagSel[row._id]);
                   return (
                     <button
                       key={row._id}
+                      onMouseEnter={()=> setHover(row.text || "")}
+                      onMouseLeave={()=> setHover("")}
                       className={`px-2 py-1 text-xs rounded-lg border active:scale-[.98] ${picked ? CHIP.on : CHIP.off}`}
                       title={`${row.cat} · ${row.sub}`}
                       onClick={()=> toggleTag(String(row._id))}
@@ -614,30 +639,52 @@ function OutputPanel(){
     const phys = loadLS(key.phys, defaultPhys);
     const dental = loadLS(key.dental, defaultDental);
     const overall = loadLS(key.overall, defaultOverall);
-    const physText = makePhysText(phys);
+
+    const H1 = (s)=> `【${s}】`;
+    const join = (...parts)=> clampBlanks(parts.filter(Boolean).join("\n\n"));
+
+    const physText = makePhysText(phys);      // BCS + (선택 시) <육안검사> 블록
     const dentalText = makeDentalText(dental);
     const overallText = makeOverallText(overall);
-    return `【신체검사】\\n${physText}\\n\\n【치과 소견】\\n${dentalText}\\n\\n【종합 소견】\\n${overallText}`;
+
+    // 실제 줄바꿈(\n) 사용 — 이전 버전의 "\\n" 문제 수정
+    return join(
+      `${H1("신체검사")}\n${physText}`,
+      `${H1("치과 소견")}\n${dentalText}`,
+      `${H1("종합 소견")}\n${overallText}`
+    );
   };
+
   const [txt, setTxt] = useState(compute());
-  useEffect(()=>{ const h=()=> setTxt(compute()); window.addEventListener('vetreport-change',h); return ()=> window.removeEventListener('vetreport-change',h); },[]);
+  useEffect(()=>{
+    const h=()=> setTxt(compute());
+    window.addEventListener('vetreport-change',h);
+    return ()=> window.removeEventListener('vetreport-change',h);
+  },[]);
   useEffect(()=> saveLS(key.output, txt), [txt]);
+
   return (
-    <Card title="최종 건강검진 소견 " subtitle="전체 섹션 문구 취합" right={<CopyBtn text={txt} />}>
+    <Card title="최종 건강검진 소견" subtitle="전체 섹션 문구 취합 (제목/줄띄움 통일)" right={<CopyBtn text={txt} />}>
       <TextArea value={txt} onChange={setTxt} rows={20} />
-      <div className="mt-2 text-xs text-slate-500">Tip: 섹션을 수정하면 이 영역이 자동 갱신됩니다. (이 창에서 수동 수정도 가능).</div>
+      <div className="mt-2 text-xs text-slate-600">Tip: 섹션을 수정하면 이 영역이 자동 갱신됩니다. (이 창에서 수동 수정도 가능)</div>
     </Card>
   );
 }
 function PolisherPanel(){
   const [input, setInput] = useState("");
   const [out, setOut] = useState("");
-  function tidy(text){ return text.replace(/\s+\./g, ".").replace(/\s{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim(); }
+  function tidy(text){
+    return clampBlanks(
+      (text || "")
+        .replace(/\s+\./g, ".")
+        .replace(/[ \t]{2,}/g, " ")
+    );
+  }
   return (
     <Card title="문장 다듬기" subtitle="간단한 공백/줄바꿈 정리">
       <Field label="원문"><TextArea value={input} onChange={setInput} rows={6} placeholder="자유 입력" /></Field>
       <div className="mt-2 flex items-center gap-2">
-        <button onClick={()=> setOut(tidy(input))} className="rounded-xl bg-slate-900 text-white px-4 py-2">문장 다듬기</button>
+        <button onClick={()=> setOut(tidy(input))} className="rounded-xl bg-blue-600 text-white px-4 py-2">문장 다듬기</button>
         <CopyBtn text={out} />
       </div>
       <div className="mt-2"><Field label="결과"><TextArea value={out} onChange={setOut} rows={8} /></Field></div>
@@ -648,11 +695,11 @@ function AboutPanel(){
   return (
     <Card title="도움말" subtitle="설계 목표 & 사용 팁">
       <ul className="list-disc pl-5 space-y-1 text-sm text-slate-700">
-        <li>상단 탭으로 섹션을 전환해 한 화면씩 집중해서 편집하세요.</li>
+        <li>상단 탭 대비를 높여 가독성을 개선했습니다.</li>
         <li>우측 결과 패널은 스크롤해도 고정되어 항상 복사 가능해요.</li>
-        <li>종합소견은 검색·선택 트레이·중분류 그룹으로 빠르게 태그를 찾을 수 있어요.</li>
+        <li>종합소견 태그에 마우스를 올리면 하이라이트 프리뷰가 즉시 뜹니다.</li>
       </ul>
-      <div className="mt-3 text-sm text-slate-500">
+      <div className="mt-3 text-sm text-slate-600">
         <b>다음 단계 제안</b>
         <ol className="list-decimal pl-5 mt-1 space-y-1">
           <li>태그 즐겨찾기(상위 노출)</li>
