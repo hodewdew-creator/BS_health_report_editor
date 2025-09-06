@@ -403,41 +403,37 @@ const PICK_TO_CAT = {
 
 /* 종합 소견 기본 상태 */
 const defaultOverall = {
+const defaultOverall = {
   picks: { physical: true, cbc: false, chem: false, ua: false, xr: false, us: false, disease: false },
-  diseaseNote: "",
-  addenda: "",
-  tagSel: {}, // { [tag]: true }
+  addenda: "",      // ← 남겨둠
+  tagSel: {},       // 태그 선택 상태
 };
 
-function makeOverallText(o, physText){
+// 기존 makeOverallText를 아래로 교체
+function makeOverallText(o/*, physText*/){
   const sel = o.picks || {};
   const lines = [];
 
-  // 기존 요약 줄
-  if (sel.physical) lines.push(`신체검사: ${physText.split("\n")[0]}`);
-  if (sel.cbc) lines.push("혈액검사(CBC): 이상 소견 확인/추적 필요 여부를 종합하여 안내드립니다.");
+  // ❌ 신체검사(BSC) 자동 요약 제거 (아예 안 붙임)
+  // 나머지 기본 문구는 유지
+  if (sel.cbc)  lines.push("혈액검사(CBC): 이상 소견 확인/추적 필요 여부를 종합하여 안내드립니다.");
   if (sel.chem) lines.push("혈액화학(Chem): 간/신장/전해질 등 주요 지표를 종합 평가했습니다.");
-  if (sel.ua) lines.push("뇨검사(UA): 비중/침사/단백 등 소견 기반으로 해석했습니다.");
-  if (sel.xr) lines.push("방사선: 흉복부 영상에서 구조적 이상 여부를 검토했습니다.");
-  if (sel.us) lines.push("복부초음파: 장기별 에코 패턴과 크기 변화를 평가했습니다.");
-  if (sel.disease && o.diseaseNote?.trim()) lines.push(`특정질환 특이소견: ${o.diseaseNote.trim()}`);
+  if (sel.ua)   lines.push("뇨검사(UA): 비중/침사/단백 등 소견 기반으로 해석했습니다.");
+  if (sel.xr)   lines.push("방사선: 흉복부 영상에서 구조적 이상 여부를 검토했습니다.");
+  if (sel.us)   lines.push("복부초음파: 장기별 에코 패턴과 크기 변화를 평가했습니다.");
 
-  // 태그로 추가한 상세 문구 — 카테고리별로 묶기
+  // ✅ 태그 선택분: [대분류] 헤더 없이, 각 줄 앞에 '⏹ ' 접두사
   const pickedTags = new Set(Object.keys(o.tagSel || {}).filter(t => o.tagSel[t]));
   if (pickedTags.size) {
-    const byCat = {};
     for (const row of OVERALL_TAGS) {
-      if (!pickedTags.has(row.tag)) continue;
-      (byCat[row.cat] ||= []).push(row.text.trim());
-    }
-    for (const cat of Object.keys(byCat)) {
-      lines.push(`\n[${cat}]`);
-      for (const line of byCat[cat]) lines.push(`- ${line}`);
+      if (pickedTags.has(row.tag)) lines.push(`⏹ ${row.text.trim()}`);
     }
   }
 
-  const tail = o.addenda?.trim() ? `\n추가 안내: ${o.addenda.trim()}` : "";
-  return lines.join("\n") + tail;
+  // ✅ 추가 안내 (있을 때만)
+  if (o.addenda?.trim()) lines.push(`추가 안내: ${o.addenda.trim()}`);
+
+  return lines.join("\n");
 }
 
 function OverallAssessmentCard(){
@@ -512,15 +508,17 @@ function OverallAssessmentCard(){
         </div>
       )}
 
-      {/* 자유 입력 */}
-      <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-        <Field label="특정질환 특이소견 (선택)">
-          <TextArea value={o.diseaseNote} onChange={(v)=> setO({ ...o, diseaseNote: v })} rows={6} placeholder="예: HCM 의심 소견..." />
-        </Field>
-        <Field label="추가 안내 문구 (선택)">
-          <TextArea value={o.addenda} onChange={(v)=> setO({ ...o, addenda: v })} rows={6} placeholder="식이/운동/재검 권장 등" />
-        </Field>
-      </div>
+// OverallAssessmentCard 내부의 "자유 입력" 섹션을 아래로 교체
+<div className="mt-3">
+  <Field label="추가 코멘트 (끝부분에 추가됩니다.)">
+    <TextArea
+      value={o.addenda}
+      onChange={(v)=> setO({ ...o, addenda: v })}
+      rows={6}
+      placeholder="식이/운동/재검 권장 등"
+    />
+  </Field>
+</div>
 
       {/* 미리보기 */}
       <div className="mt-3">
