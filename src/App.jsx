@@ -2,14 +2,20 @@ import React, { useEffect, useMemo, useState } from "react";
 import templates from "./data/templates.json";
 
 /**
- * App.jsx — UI Polish v4.1
- * - OutputPanel(최종 건강검진 소견): 기본 접힘
- * - AboutPanel(도움말): 기본 접힘 + 토글 버튼
- * - (v4 포함 사항 유지) 톤다운 브랜드 컬러, 안정된 프리뷰 위치/높이, 라벨 가독성 강화 등
+ * App.jsx — UI Polish v5
+ * Requests applied:
+ * 1) 태그(육안검사/종합소견) 선택색을 옅은 노랑톤으로 (너무 튀지 않게)
+ * 2) 종합소견 체크박스: CBC+Chem => "혈액검사" 하나로 통합 (이전 저장값과 호환)
+ * 3) 태그 제목/내용 글씨 더 진하게
+ * 4) "문장 다듬기" → "AI 문장 다듬기", 파란 버튼 너비 2/3
+ * 5) 최종 검진 소견: 제목/부제 변경 + 복사/펼치기 버튼 가로 정렬·사이즈 통일
+ * 6) 종합소견 [중분류] 제목 오른쪽에 태그 버튼이 같은 줄로 배치
  */
 
-// ===== Brand color (adjust here if 병원 컬러 변경) =====
+// ===== Brand color (탭/주요 버튼) =====
 const BRAND = { bg: "#0F5E9C", border: "#0F5E9C", text: "#ffffff" };
+// ===== Selected chip style (부드러운 노랑톤) =====
+const CHIP_ON_STYLE = { backgroundColor: "#FEF3C7", borderColor: "#FACC15", color: "#111827" }; // amber-100/400
 
 export default function App() {
   const [tab, setTab] = useState(() => {
@@ -21,14 +27,12 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 text-slate-900 antialiased">
       <Header tab={tab} onTab={setTab} />
       <main className="mx-auto max-w-6xl p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* 좌측: 선택된 섹션만 렌더 */}
         <div className="lg:col-span-2 space-y-4">
           {tab === "physical" && <PhysicalExamCard />}
           {tab === "dental" && <DentalFindingsCard />}
           {tab === "overall" && <OverallAssessmentCard />}
         </div>
 
-        {/* 우측: 결과/도움말 sticky */}
         <div className="lg:col-span-1 space-y-4 lg:sticky top-24 self-start">
           <OutputPanel />
           <PolisherPanel />
@@ -50,25 +54,13 @@ const key = {
   output: "vetreport_output",
 };
 
-function saveLS(k, v) {
-  try { localStorage.setItem(k, JSON.stringify(v)); } catch {}
-}
+function saveLS(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
 function loadLS(k, fallback) {
-  try {
-    const v = localStorage.getItem(k);
-    return v ? JSON.parse(v) : fallback;
-  } catch { return fallback; }
+  try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
 }
-function emitChange(){
-  try { window.dispatchEvent(new Event('vetreport-change')); } catch {}
-}
+function emitChange(){ try { window.dispatchEvent(new Event('vetreport-change')); } catch {} }
 function clampBlanks(s){
-  // 연속 개행 3줄 이상 → 2줄로 축소, 앞뒤 공백 정리
-  return (s || "")
-    .replace(/\r\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .replace(/[ \t]+\n/g, "\n")
-    .trim();
+  return (s || "").replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").replace(/[ \t]+\n/g, "\n").trim();
 }
 
 function Card({ title, subtitle, children, right }) {
@@ -76,30 +68,45 @@ function Card({ title, subtitle, children, right }) {
     <section className="bg-white rounded-2xl shadow-sm border border-slate-200">
       <div className="flex items-start justify-between gap-3 px-5 py-4 border-b border-slate-100">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
-          {subtitle ? (
-            <p className="text-sm text-slate-700 mt-0.5">{subtitle}</p>
-          ) : null}
+          <h2 className="text-lg font-semibold text-slate-950">{title}</h2>
+          {subtitle ? <p className="text-sm text-slate-900 mt-0.5">{subtitle}</p> : null}
         </div>
-        <div>{right}</div>
+        <div className="flex-shrink-0">{right}</div>
       </div>
       <div className="p-5">{children}</div>
     </section>
   );
 }
-function Field({ label, children, hint }) { return (
-  <label className="block">
-    <div className="mb-1 text-sm font-semibold text-slate-900">{label}</div>
-    {children}
-    {hint ? <div className="mt-1 text-xs text-slate-700">{hint}</div> : null}
-  </label>
-); }
-function TextArea({ value, onChange, rows = 5, placeholder }) { return (
-  <textarea className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 resize-y text-slate-900" rows={rows} value={value} onChange={(e)=> onChange(e.target.value)} placeholder={placeholder} />
-); }
-function CopyBtn({ text, label = "복사" }) { return (
-  <button onClick={async ()=>{ try { await navigator.clipboard.writeText(text || ""); } catch {} }} className="rounded-xl border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50 active:scale-[.99] text-slate-900">{label}</button>
-); }
+function Field({ label, children, hint }) {
+  return (
+    <label className="block">
+      <div className="mb-1 text-sm font-semibold text-slate-950">{label}</div>
+      {children}
+      {hint ? <div className="mt-1 text-xs text-slate-900">{hint}</div> : null}
+    </label>
+  );
+}
+function TextArea({ value, onChange, rows = 5, placeholder }) {
+  return (
+    <textarea
+      className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 resize-y text-slate-950"
+      rows={rows}
+      value={value}
+      onChange={(e)=> onChange(e.target.value)}
+      placeholder={placeholder}
+    />
+  );
+}
+function CopyBtn({ text, label = "복사", className = "" }) {
+  return (
+    <button
+      onClick={async ()=>{ try { await navigator.clipboard.writeText(text || ""); } catch {} }}
+      className={"inline-flex items-center justify-center h-9 px-3 rounded-xl border border-slate-300 text-sm text-slate-950 hover:bg-slate-50 active:scale-[.99] " + className}
+    >
+      {label}
+    </button>
+  );
+}
 
 /*********************************
  * Header / Footer
@@ -110,29 +117,19 @@ function Header({ tab, onTab }) {
       <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3.5">
-            <img
-              src="/baeksan-logo.png"
-              alt="Baeksan Animal Hospital"
-              className="w-10 h-10 rounded-lg bg-white object-contain p-1 shadow-sm"
-            />
+            <img src="/baeksan-logo.png" alt="Baeksan Animal Hospital" className="w-10 h-10 rounded-lg bg-white object-contain p-1 shadow-sm" />
             <div>
-              <div className="text-lg md:text-xl font-semibold tracking-tight text-slate-900">
-                건강검진 보고서 에디터
-              </div>
-              <div className="text-sm text-slate-800">
-                백산동물병원 · 내부용
-              </div>
+              <div className="text-lg md:text-xl font-semibold tracking-tight text-slate-950">건강검진 보고서 에디터</div>
+              <div className="text-sm text-slate-900">백산동물병원 · 내부용</div>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-slate-100 text-slate-800 border border-slate-200">
-              MVP
-            </span>
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-slate-100 text-slate-900 border border-slate-200">MVP</span>
             <a
               href="#"
               onClick={(e)=>{ e.preventDefault(); localStorage.clear(); location.reload(); }}
-              className="text-xs text-slate-800 hover:text-slate-900"
+              className="text-xs text-slate-900 hover:text-slate-950"
               title="모든 데이터(로컬저장) 초기화"
             >
               초기화
@@ -158,7 +155,7 @@ function SegTab({ label, active, onClick }){
         "px-3.5 py-2 rounded-lg border text-sm md:text-base font-semibold transition " +
         (active
           ? "text-white shadow-sm"
-          : "bg-white text-slate-900 border-slate-300 hover:bg-slate-50")
+          : "bg-white text-slate-950 border-slate-300 hover:bg-slate-50")
       }
       style={active ? { backgroundColor: BRAND.bg, borderColor: BRAND.border } : {}}
     >
@@ -168,7 +165,7 @@ function SegTab({ label, active, onClick }){
 }
 function Footer(){
   return (
-    <footer className="py-6 text-center text-xs text-slate-700">
+    <footer className="py-6 text-center text-xs text-slate-900">
       <div className="mx-auto max-w-6xl px-4">
         © {new Date().getFullYear()} Vet Report Tools · 로컬에서 동작(데이터: localStorage)
       </div>
@@ -311,13 +308,13 @@ function PhysicalExamCard(){
           onChange={(e)=> setPhys({ ...phys, bcs: Number(e.target.value) })}
           className="w-full"
         />
-        <div className="mt-2 text-sm text-slate-900 whitespace-pre-wrap">
+        <div className="mt-2 text-sm text-slate-950 whitespace-pre-wrap">
           {getBCSText(phys.bcs)}
         </div>
       </Field>
 
       <div className="mt-4">
-        <div className="mb-1 text-sm font-semibold text-slate-900">육안검사 선택</div>
+        <div className="mb-1 text-sm font-semibold text-slate-950">육안검사 선택</div>
         <div className="flex flex-wrap gap-2">
           {PHYS_LOOKS.map((opt) => {
             const on = !!(phys.looks && phys.looks[opt.title]);
@@ -331,8 +328,8 @@ function PhysicalExamCard(){
                   next[opt.title] = !on;
                   setPhys({ ...phys, looks: next });
                 }}
-                className={"px-2 py-1 text-xs rounded-lg border active:scale-[.98] " + (on ? "text-white" : "bg-white text-slate-900 border-slate-300 hover:bg-slate-50")}
-                style={on ? { backgroundColor: BRAND.bg, borderColor: BRAND.border } : {}}
+                className={"px-2 py-1 text-xs rounded-lg border active:scale-[.98] " + (on ? "" : "bg-white text-slate-950 border-slate-300 hover:bg-slate-50")}
+                style={on ? CHIP_ON_STYLE : {}}
                 title={opt.desc}
               >
                 {opt.title}
@@ -394,42 +391,42 @@ function DentalFindingsCard(){
     <Card title="② 치과 소견" subtitle="항목 선택 → 통합 소견" right={<CopyBtn text={text} />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <Field label="전체 상태 평가">
-          <select className="w-full rounded-xl border border-slate-300 px-3 py-2" value={d.status} onChange={(e)=> setD({ ...d, status: e.target.value })}>
+          <select className="w-full rounded-xl border border-slate-300 px-3 py-2 text-slate-950" value={d.status} onChange={(e)=> setD({ ...d, status: e.target.value })}>
             {opts.status.map((s)=> <option key={s} value={s}>{s}</option>)}
           </select>
         </Field>
         <Field label="치은염 Grade">
-          <select className="w-full rounded-xl border border-slate-300 px-3 py-2" value={d.gingivitis} onChange={(e)=> setD({ ...d, gingivitis: e.target.value })}>
+          <select className="w-full rounded-xl border border-slate-300 px-3 py-2 text-slate-950" value={d.gingivitis} onChange={(e)=> setD({ ...d, gingivitis: e.target.value })}>
             {opts.gingivitis.map((g)=> <option key={g} value={g}>{g}</option>)}
           </select>
         </Field>
         <Field label="치석 Grade">
-          <select className="w-full rounded-xl border border-slate-300 px-3 py-2" value={d.calculus} onChange={(e)=> setD({ ...d, calculus: e.target.value })}>
+          <select className="w-full rounded-xl border border-slate-300 px-3 py-2 text-slate-950" value={d.calculus} onChange={(e)=> setD({ ...d, calculus: e.target.value })}>
             {opts.calculus.map((g)=> <option key={g} value={g}>{g}</option>)}
           </select>
         </Field>
         <Field label="골절 여부">
-          <select className="w-full rounded-xl border border-slate-300 px-3 py-2" value={d.fracture} onChange={(e)=> setD({ ...d, fracture: e.target.value })}>
+          <select className="w-full rounded-xl border border-slate-300 px-3 py-2 text-slate-950" value={d.fracture} onChange={(e)=> setD({ ...d, fracture: e.target.value })}>
             {opts.fracture.map((g)=> <option key={g} value={g}>{g}</option>)}
           </select>
         </Field>
         <Field label="TR(치아흡수성 병변)">
-          <select className="w-full rounded-xl border border-slate-300 px-3 py-2" value={d.tr} onChange={(e)=> setD({ ...d, tr: e.target.value })}>
+          <select className="w-full rounded-xl border border-slate-300 px-3 py-2 text-slate-950" value={d.tr} onChange={(e)=> setD({ ...d, tr: e.target.value })}>
             {opts.tr.map((g)=> <option key={g} value={g}>{g}</option>)}
           </select>
         </Field>
         <Field label="결손치">
-          <select className="w-full rounded-xl border border-slate-300 px-3 py-2" value={d.missing} onChange={(e)=> setD({ ...d, missing: e.target.value })}>
+          <select className="w-full rounded-xl border border-slate-300 px-3 py-2 text-slate-950" value={d.missing} onChange={(e)=> setD({ ...d, missing: e.target.value })}>
             {opts.missing.map((g)=> <option key={g} value={g}>{g}</option>)}
           </select>
         </Field>
         <Field label="스케일링 권장">
-          <select className="w-full rounded-xl border border-slate-300 px-3 py-2" value={d.scaling} onChange={(e)=> setD({ ...d, scaling: e.target.value })}>
+          <select className="w-full rounded-xl border border-slate-300 px-3 py-2 text-slate-950" value={d.scaling} onChange={(e)=> setD({ ...d, scaling: e.target.value })}>
             {opts.scaling.map((g)=> <option key={g} value={g}>{g}</option>)}
           </select>
         </Field>
         <Field label="마무리 소견">
-          <input className="w-full rounded-xl border border-slate-300 px-3 py-2" value={d.wrap} onChange={(e)=> setD({ ...d, wrap: e.target.value })} />
+          <input className="w-full rounded-xl border border-slate-300 px-3 py-2 text-slate-950" value={d.wrap} onChange={(e)=> setD({ ...d, wrap: e.target.value })} />
         </Field>
       </div>
       <div className="mt-3">
@@ -443,20 +440,20 @@ function DentalFindingsCard(){
 }
 
 /*********************************
- * 3) 종합 소견 — 태그 팔레트(검색/그룹/트레이)
+ * 3) 종합 소견 — 태그 팔레트
  *********************************/
 
 const OVERALL_TAGS = templates.overall;
 const TAGS = OVERALL_TAGS.map((r, idx) => ({ ...r, _id: idx }));
 
-// 소프트 톤 클래스
 const CHIP = {
-  off: "bg-white text-slate-900 border-slate-300 hover:bg-slate-50",
-  on:  "text-white",
+  off: "bg-white text-slate-950 border-slate-300 hover:bg-slate-50",
+  on:  "", // style로 적용
 };
 
 const defaultOverall = {
-  picks: { physical: true, cbc: false, chem: false, ua: false, xr: false, us: false, disease: false },
+  // CBC + Chem => blood로 통합
+  picks: { physical: true, blood: false, ua: false, xr: false, us: false, disease: false },
   addenda: "",
   tagSel: {}, // { [id]: true }
 };
@@ -483,9 +480,28 @@ function OverallAssessmentCard(){
   const preview = useMemo(()=> makeOverallText(o), [o]);
   useEffect(()=> { saveLS(key.overall, o); emitChange(); }, [o]);
 
+  // 저장값 호환 (cbc/chem → blood)
+  useEffect(()=>{
+    setO(prev => {
+      const p = { ...(prev.picks || {}) };
+      let changed = false;
+      if ((p.cbc || p.chem) && !p.blood) { p.blood = true; changed = true; }
+      if ('cbc' in p) { delete p.cbc; changed = true; }
+      if ('chem' in p) { delete p.chem; changed = true; }
+      // 누락키 보정
+      ["physical","blood","ua","xr","us","disease"].forEach(k=>{ if (p[k]===undefined) { p[k]=false; changed=true; }});
+      return changed ? { ...prev, picks: p } : prev;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const labelMap = {
-    physical: "신체검사", cbc: "혈액검사(CBC)", chem: "혈액화학(Chem)",
-    ua: "뇨검사(UA)", xr: "방사선", us: "복부초음파", disease: "특정질환"
+    physical: "신체검사",
+    blood: "혈액검사",
+    ua: "뇨검사(UA)",
+    xr: "방사선",
+    us: "복부초음파",
+    disease: "특정질환",
   };
 
   function togglePick(k){ setO(prev => ({ ...prev, picks: { ...prev.picks, [k]: !prev.picks[k] }})); }
@@ -495,7 +511,7 @@ function OverallAssessmentCard(){
   // 활성 대분류 집합
   const activeCats = useMemo(()=>{
     const s = new Set(); Object.entries(o.picks||{}).forEach(([k,v])=> { if (v) {
-      const cat = ({ physical:"신체검사", cbc:"혈액검사", chem:"혈액검사", ua:"소변검사", xr:"방사선", us:"복부초음파", disease:"특정질환" })[k];
+      const cat = ({ physical:"신체검사", blood:"혈액검사", ua:"소변검사", xr:"방사선", us:"복부초음파", disease:"특정질환" })[k];
       if (cat) s.add(cat);
     }});
     return s;
@@ -504,11 +520,11 @@ function OverallAssessmentCard(){
   // 태그풀 → 검색필터 → 그룹핑(sub)
   const tagPool = useMemo(()=> TAGS.filter(r => activeCats.has(r.cat)), [activeCats]);
   const filtered = useMemo(()=> {
-    const qq = q.trim();
+    const qq = q.trim().toLowerCase();
     if (!qq) return tagPool;
     return tagPool.filter(r =>
-      (r.tag && r.tag.toLowerCase().includes(qq.toLowerCase())) ||
-      (r.text && r.text.toLowerCase().includes(qq.toLowerCase()))
+      (r.tag && r.tag.toLowerCase().includes(qq)) ||
+      (r.text && r.text.toLowerCase().includes(qq))
     );
   }, [tagPool, q]);
 
@@ -522,7 +538,6 @@ function OverallAssessmentCard(){
     return Array.from(g.entries()); // [ [sub, rows[]], ... ]
   }, [filtered]);
 
-  // 선택된 태그 객체 리스트
   const selectedObjs = useMemo(()=> {
     const ids = Object.keys(o.tagSel||{}).filter(id => o.tagSel[id]);
     const set = new Set(ids);
@@ -530,13 +545,13 @@ function OverallAssessmentCard(){
   }, [o.tagSel]);
 
   return (
-    <Card title="③ 종합 소견" subtitle="검사 선택 → 태그 클릭으로 상세 문구 추가" right={<CopyBtn text={preview} />}>
+    <Card title="③ 종합 소견" subtitle="검사 선택 → 태그 클릭으로 상세 문구 추가 (마우스 올리면 프리뷰)" right={<CopyBtn text={preview} />}>
       {/* 체크박스 */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-        {Object.entries(o.picks).map(([k,v])=> (
+        {Object.entries(labelMap).map(([k, v]) => (
           <label key={k} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50">
-            <input type="checkbox" checked={v} onChange={()=> togglePick(k)} />
-            <span className="text-sm font-semibold text-slate-900">{labelMap[k]}</span>
+            <input type="checkbox" checked={!!o.picks[k]} onChange={()=> togglePick(k)} />
+            <span className="text-sm font-semibold text-slate-950">{v}</span>
           </label>
         ))}
       </div>
@@ -544,22 +559,22 @@ function OverallAssessmentCard(){
       {/* 검색 + 결과수 */}
       <div className="mt-3 flex items-center gap-2">
         <input
-          className="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm"
+          className="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-950"
           placeholder="태그/내용 검색"
           value={q}
           onChange={(e)=> setQ(e.target.value)}
         />
-        <span className="text-xs font-semibold text-slate-900">{filtered.length}개</span>
+        <span className="text-xs font-semibold text-slate-950">{filtered.length}개</span>
       </div>
 
       {/* 선택된 태그 트레이 */}
       {selectedObjs.length > 0 && (
         <div className="mt-3">
-          <div className="text-xs font-semibold text-slate-900 mb-1">선택된 태그</div>
+          <div className="text-xs font-semibold text-slate-950 mb-1">선택된 태그</div>
           <div className="flex flex-wrap gap-2">
             {selectedObjs.map(r => (
               <button key={r._id} onClick={()=> removeTag(String(r._id))}
-                className="px-2 py-1 text-xs rounded-lg border bg-slate-100 text-slate-900 border-slate-200 hover:bg-slate-200">
+                className="px-2 py-1 text-xs rounded-lg border bg-slate-100 text-slate-950 border-slate-200 hover:bg-slate-200">
                 {r.tag} <span className="ml-1 opacity-70">✕</span>
               </button>
             ))}
@@ -567,12 +582,14 @@ function OverallAssessmentCard(){
         </div>
       )}
 
-      {/* 태그 그룹 */}
+      {/* 태그 그룹: 중분류 오른쪽 같은 줄에 태그 */}
       {grouped.length > 0 && (
-        <div className="mt-4 space-y-4">
+        <div className="mt-4 space-y-3">
           {grouped.map(([sub, rows]) => (
-            <div key={sub}>
-              <div className="text-[12px] font-semibold tracking-wide text-slate-900 mb-1">{sub}</div>
+            <div key={sub} className="flex flex-wrap items-start gap-3">
+              <div className="shrink-0 text-[12px] font-semibold tracking-wide text-slate-950 px-2 py-1 bg-slate-100 rounded-md border border-slate-200">
+                {sub}
+              </div>
               <div className="flex flex-wrap gap-2">
                 {rows.map(row => {
                   const picked = !!(o.tagSel && o.tagSel[row._id]);
@@ -582,7 +599,7 @@ function OverallAssessmentCard(){
                       onMouseEnter={()=> setHover(row.text || "")}
                       onMouseLeave={()=> setHover("")}
                       className={`px-2 py-1 text-xs rounded-lg border active:scale-[.98] ${picked ? CHIP.on : CHIP.off}`}
-                      style={picked ? { backgroundColor: BRAND.bg, borderColor: BRAND.border } : {}}
+                      style={picked ? CHIP_ON_STYLE : {}}
                       title={`${row.cat} · ${row.sub}`}
                       onClick={()=> toggleTag(String(row._id))}
                     >
@@ -596,7 +613,7 @@ function OverallAssessmentCard(){
         </div>
       )}
 
-      {/* (이곳) 호버 프리뷰 — 태그와 추가안내 사이, 고정영역 */}
+      {/* 호버 프리뷰 — 태그와 추가안내 사이, 고정영역 */}
       <div className="mt-4 rounded-xl border text-sm p-3 whitespace-pre-wrap transition-all"
            style={{ minHeight: hover ? "64px" : "0px", backgroundColor: hover ? "#FFF7ED" : "transparent",
                     borderColor: hover ? "#FED7AA" : "transparent", color: "#7C2D12" }}>
@@ -626,7 +643,7 @@ function OverallAssessmentCard(){
 }
 
 /*********************************
- * 우측 패널: 출력 & 폴리셔 & 도움말(접기 기본)
+ * 우측 패널: 출력 & 폴리셔 & 도움말
  *********************************/
 function OutputPanel(){
   const compute = () => {
@@ -659,16 +676,30 @@ function OutputPanel(){
 
   return (
     <Card
-      title="최종 건강검진 소견"
-      subtitle="전체 섹션 문구 취합 (제목/줄띄움 통일)"
-      right={<div className="flex items-center gap-2"><CopyBtn text={txt} /><button onClick={()=> setOpen(o=>!o)} className="rounded-xl border border-slate-300 px-3 py-1.5 text-sm text-slate-900">{open ? "접기" : "펼치기"}</button></div>}
+      title="최종 검진 소견"
+      subtitle="(전체 섹션 내용 취합)"
+      right={
+        <div className="inline-flex items-center gap-2">
+          <CopyBtn text={txt} />
+          <button
+            onClick={()=> setOpen(o=>!o)}
+            className="inline-flex items-center justify-center h-9 px-3 rounded-xl border border-slate-300 text-sm text-slate-950 hover:bg-slate-50"
+          >
+            {open ? "접기" : "펼치기"}
+          </button>
+        </div>
+      }
     >
-      {open && <TextArea value={txt} onChange={setTxt} rows={20} />}
-      {!open && <div className="text-xs text-slate-700">접힌 상태입니다. “펼치기”를 눌러 내용을 확인하세요.</div>}
-      <div className="mt-2 text-xs text-slate-700">Tip: 섹션을 수정하면 이 영역이 자동 갱신됩니다. (이 창에서 수동 수정도 가능)</div>
+      {open ? (
+        <TextArea value={txt} onChange={setTxt} rows={20} />
+      ) : (
+        <div className="text-xs text-slate-900">접힌 상태입니다. “펼치기”를 눌러 내용을 확인하세요.</div>
+      )}
+      <div className="mt-2 text-xs text-slate-900">Tip: 섹션을 수정하면 이 영역이 자동 갱신됩니다. (이 창에서 수동 수정도 가능)</div>
     </Card>
   );
 }
+
 function PolisherPanel(){
   const [input, setInput] = useState("");
   const [out, setOut] = useState("");
@@ -680,10 +711,10 @@ function PolisherPanel(){
     );
   }
   return (
-    <Card title="문장 다듬기" subtitle="간단한 공백/줄바꿈 정리">
+    <Card title="AI 문장 다듬기" subtitle="간단한 공백/줄바꿈 정리">
       <Field label="원문"><TextArea value={input} onChange={setInput} rows={6} placeholder="자유 입력" /></Field>
       <div className="mt-2 flex items-center gap-2">
-        <button onClick={()=> setOut(tidy(input))} className="rounded-xl px-4 py-2 text-white" style={{ backgroundColor: BRAND.bg }}>문장 다듬기</button>
+        <button onClick={()=> setOut(tidy(input))} className="w-2/3 md:w-1/2 rounded-xl px-4 py-2 text-white" style={{ backgroundColor: BRAND.bg }}>문장 다듬기</button>
         <CopyBtn text={out} />
       </div>
       <div className="mt-2"><Field label="결과"><TextArea value={out} onChange={setOut} rows={8} /></Field></div>
@@ -696,16 +727,16 @@ function AboutPanel(){
     <Card
       title="도움말"
       subtitle="설계 목표 & 사용 팁"
-      right={<button onClick={()=> setOpen(o=>!o)} className="rounded-xl border border-slate-300 px-3 py-1.5 text-sm text-slate-900">{open ? "접기" : "펼치기"}</button>}
+      right={<button onClick={()=> setOpen(o=>!o)} className="inline-flex items-center justify-center h-9 px-3 rounded-xl border border-slate-300 text-sm text-slate-950 hover:bg-slate-50">{open ? "접기" : "펼치기"}</button>}
     >
       {open ? (
         <>
-          <ul className="list-disc pl-5 space-y-1 text-sm text-slate-900">
+          <ul className="list-disc pl-5 space-y-1 text-sm text-slate-950">
             <li>상단 탭 대비를 높여 가독성을 개선했습니다.</li>
             <li>종합소견 프리뷰는 태그 아래·추가안내 위에 고정되어 레이아웃이 흔들리지 않습니다.</li>
             <li>우측 결과 패널은 접기/펼치기가 가능해 집중이 쉬워요.</li>
           </ul>
-          <div className="mt-3 text-sm text-slate-800">
+          <div className="mt-3 text-sm text-slate-950">
             <b>다음 단계 제안</b>
             <ol className="list-decimal pl-5 mt-1 space-y-1">
               <li>태그 즐겨찾기(상위 노출)</li>
@@ -715,7 +746,7 @@ function AboutPanel(){
           </div>
         </>
       ) : (
-        <div className="text-xs text-slate-700">접힌 상태입니다. “펼치기”를 눌러 도움말을 확인하세요.</div>
+        <div className="text-xs text-slate-900">접힌 상태입니다. “펼치기”를 눌러 도움말을 확인하세요.</div>
       )}
     </Card>
   );
