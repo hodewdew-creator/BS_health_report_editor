@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# SPA 라우팅일 때 권장(없어도 에러는 아님)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
