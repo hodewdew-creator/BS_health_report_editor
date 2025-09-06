@@ -740,16 +740,14 @@ function AboutPanel(){
       {open ? (
         <>
           <ul className="list-disc pl-5 space-y-1 text-sm text-slate-950">
-            <li>상단 탭 대비를 높여 가독성을 개선했습니다.</li>
-            <li>종합소견 프리뷰는 태그 아래·추가안내 위에 고정되어 레이아웃이 흔들리지 않습니다.</li>
+            <li>각종 내용 템플릿 수정은 src/data/templates.json</li>
             <li>우측 결과 패널은 접기/펼치기가 가능해 집중이 쉬워요.</li>
           </ul>
           <div className="mt-3 text-sm text-slate-950">
             <b>다음 단계 제안</b>
             <ol className="list-decimal pl-5 mt-1 space-y-1">
-              <li>태그 즐겨찾기(상위 노출)</li>
-              <li>내보내기 템플릿(병원 로고/포맷) PDF</li>
-              <li>PWA 패키징 — 오프라인 사용 & 바탕화면 설치</li>
+              <li> GPT 문장 다듬기 , 키워드 입력시 소견 작성 구현</li>
+
             </ol>
           </div>
         </>
