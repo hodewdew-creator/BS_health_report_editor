@@ -2,14 +2,15 @@ import React, { useEffect, useMemo, useState } from "react";
 import templates from "./data/templates.json";
 
 /**
- * App.jsx — UI Polish v5
- * Requests applied:
- * 1) 태그(육안검사/종합소견) 선택색을 옅은 노랑톤으로 (너무 튀지 않게)
- * 2) 종합소견 체크박스: CBC+Chem => "혈액검사" 하나로 통합 (이전 저장값과 호환)
- * 3) 태그 제목/내용 글씨 더 진하게
- * 4) "문장 다듬기" → "AI 문장 다듬기", 파란 버튼 너비 2/3
- * 5) 최종 검진 소견: 제목/부제 변경 + 복사/펼치기 버튼 가로 정렬·사이즈 통일
- * 6) 종합소견 [중분류] 제목 오른쪽에 태그 버튼이 같은 줄로 배치
+ * App.jsx — UI Polish v5.1
+ * - 태그 선택 칩: 옅은 노랑(amber) 스타일
+ * - 종합소견: CBC/Chem → "혈액검사" 통합, 중분류 오른쪽에 태그(한 줄), 모바일에서는 wrap
+ * - 글씨 가독성 강화(slate-950/900)
+ * - AI 문장 다듬기: 부제 "(미구현상태입니다)"
+ * - 최종 검진 소견: 제목/부제 수정, 버튼 정렬/동일 높이
+ * - Output/Help 기본 접힘 유지
+ * - Header: 로고 2배, 제목 변경/크기 업, MVP 제거, '초기화' bold
+ * - 종합소견 추가안내문구 placeholder 제거
  */
 
 // ===== Brand color (탭/주요 버튼) =====
@@ -117,19 +118,27 @@ function Header({ tab, onTab }) {
       <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3.5">
-            <img src="/baeksan-logo.png" alt="Baeksan Animal Hospital" className="w-10 h-10 rounded-lg bg-white object-contain p-1 shadow-sm" />
+            <img
+              src="/baeksan-logo.png"
+              alt="FORCAT"
+              className="w-20 h-20 rounded-lg bg-white object-contain p-1 shadow-sm"
+            />
             <div>
-              <div className="text-lg md:text-xl font-semibold tracking-tight text-slate-950">건강검진 보고서 에디터</div>
-              <div className="text-sm text-slate-900">백산동물병원 · 내부용</div>
+              <div className="text-2xl md:text-3xl font-bold tracking-tight text-slate-950">
+                FORCAT 건강검진 결과서 Editor v.1.0
+              </div>
+              <div className="text-sm text-slate-900">
+                백산동물병원 · 내부용
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-slate-100 text-slate-900 border border-slate-200">MVP</span>
+          <div className="flex items-center gap-3">
+            {/* MVP 배지 제거 */}
             <a
               href="#"
               onClick={(e)=>{ e.preventDefault(); localStorage.clear(); location.reload(); }}
-              className="text-xs text-slate-900 hover:text-slate-950"
+              className="text-xs font-bold text-slate-900 hover:text-slate-950"
               title="모든 데이터(로컬저장) 초기화"
             >
               초기화
@@ -582,15 +591,15 @@ function OverallAssessmentCard(){
         </div>
       )}
 
-      {/* 태그 그룹: 중분류 오른쪽 같은 줄에 태그 */}
+      {/* 태그 그룹: 중분류 오른쪽 같은 줄에 태그 (모바일은 wrap) */}
       {grouped.length > 0 && (
         <div className="mt-4 space-y-3">
           {grouped.map(([sub, rows]) => (
-            <div key={sub} className="flex flex-wrap items-start gap-3">
-              <div className="shrink-0 text-[12px] font-semibold tracking-wide text-slate-950 px-2 py-1 bg-slate-100 rounded-md border border-slate-200">
+            <div key={sub} className="flex flex-wrap md:flex-nowrap items-start gap-3">
+              <div className="shrink-0 whitespace-nowrap text-[12px] font-semibold tracking-wide text-slate-950 px-2 py-1 bg-slate-100 rounded-md border border-slate-200">
                 {sub}
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex-1 min-w-0 flex flex-wrap gap-2">
                 {rows.map(row => {
                   const picked = !!(o.tagSel && o.tagSel[row._id]);
                   return (
@@ -620,14 +629,13 @@ function OverallAssessmentCard(){
         {hover}
       </div>
 
-      {/* 자유 입력 — 추가안내 (높이 1/2) */}
+      {/* 자유 입력 — 추가안내 (placeholder 제거) */}
       <div className="mt-3">
         <Field label="추가 안내 문구 (선택)">
           <TextArea
             value={o.addenda}
             onChange={(v)=> setO({ ...o, addenda: v })}
             rows={3}
-            placeholder="식이/운동/재검 권장 등"
           />
         </Field>
       </div>
@@ -711,8 +719,8 @@ function PolisherPanel(){
     );
   }
   return (
-    <Card title="AI 문장 다듬기" subtitle="간단한 공백/줄바꿈 정리">
-      <Field label="원문"><TextArea value={input} onChange={setInput} rows={6} placeholder="자유 입력" /></Field>
+    <Card title="AI 문장 다듬기" subtitle="(미구현상태입니다)">
+      <Field label="원문"><TextArea value={input} onChange={setInput} rows={6} /></Field>
       <div className="mt-2 flex items-center gap-2">
         <button onClick={()=> setOut(tidy(input))} className="w-2/3 md:w-1/2 rounded-xl px-4 py-2 text-white" style={{ backgroundColor: BRAND.bg }}>문장 다듬기</button>
         <CopyBtn text={out} />
