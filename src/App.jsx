@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import templates from "./data/templates.json";
 
 /*
   ▶ TailwindCSS 사용
@@ -182,6 +183,9 @@ function getDentalOpts(){ return DEFAULT_DENTAL_OPTS; }
  *********************************/
 const defaultPhys = { bcs: 5, looks: {} };
 
+// 신체검사: 육안검사 태그 (외부 JSON에서 불러옴)
+const PHYS_LOOKS = templates.physical.looks.map(r => ({ title: r.title, desc: r.text }));
+
 function makePhysText(p){
   const NL = String.fromCharCode(10);
   const base = getBCSText(p.bcs);
@@ -310,287 +314,6 @@ const DENTAL_DESC = {
   }
 };
 
-const PHYS_LOOKS = [
-  { title: "정상", desc: "⏹ 신체검사상 특이적인 이상소견 확인되지 않았습니다." },
-  { title: "피부종괴", desc: "⏹ [병변부위] 에서 papule(구진)/mass(종괴) 확인됩니다. 크기가 크고/작고 유동적/근육에고정 되어있으며 염증성/비염증성 으로, 세포검사를 추천드립니다/세포검사상 []가 의심됩니다. 크기가 커지거나 염증을 유발할 경우 제거가 추천됩니다." },
-  { title: "비만세포종", desc: "⏹ MCT(Mast cell tumor, 비만세포종)가 의심됩니다. 현재 특이 소견은 없으나, 지속적으로 소양감(간지러움증) 및 상처가 생길 경우에는 수술적 제거를 추천드립니다. 복부 초음파 상에서 추가적인 복강내 종괴 의심 소견은 확인되지 않습니다." },
-  { title: "과잉그루밍", desc: "⏹ 자가손상성(핥음, 긁음) 유발되었을 것으로 생각되는 병변이 [병변부위에서] 확인됩니다. 통증, 혹은 다른 질환 및 스트레스 요인이 증상을 유발했을 수 있으며, 정도가 심할 경우 처치 및 내복약 투약 여부를 상의해주세요." },
-  { title: "하복부과잉그루밍", desc: "⏹ 스트레스 혹은 알러지성 소인으로 인한 하복부 과잉 그루밍이 의심됩니다. 환부 자체는 현재 치료를 요하지 않으나, 증상이 심해서 환묘복, 넥칼라 등으로 진정이 되지 않을 경우, 내복약 투여를 고려해 볼 수 있습니다." },
-  { title: "발가락과잉그루밍", desc: "⏹ 발가락 과잉그루밍 관련하여, 현재로서는 피부에 치료를 요하는 병변이 확인되지는 않습니다. 알러지성 지간염, 습진(세균,곰팡이 감염), 스트레스성 과잉그루밍 가능성이 있습니다. 넥칼라 및 소독 등 보존적 치료를 먼저 진행해보시고, 발적, 가피(딱지) 등 개선후에도 다시 과잉그루밍이 확인될 경우에는 내복약 투약을 고려해볼 수 있습니다." },
-  { title: "발바닥피부염", desc: "⏹ 부종 및 발적이 확인됩니다. 고양이 발바닥 피부염 (feline pododermaitis) 가능성이 가장 높다고 생각되며, 호산구성 육아종이나 다른 피부/면역계 질환 가능성도 배제되지 않습니다. 내복약 투약 반응에 따라 관리 해보시는 것을 추천드립니다." },
-  { title: "발톱과각화증,궤양", desc: "⏹ 사지 발톱이 과도하게 길어져 있으며 과각화 및 변형이 확인되었고, 발바닥 패드의 각질 및 무통성 궤양성 병변이 확인되었습니다. Feline pododermatitis (발바닥피부염), Cutaneous horn(피각), pemphigus (천포창) 등 면역매개성 질환 가능성이 있으며, 감염(fungal infection 등)가능성도 배제되지 않은 상태입니다. 차후 진단을 위한 추가적인 검사를 고려해볼 수 있습니다. 발톱은 주기적으로 클리핑 해주세요" },
-  { title: "마른눈꼽-만성URTD", desc: "⏹ 현재는 비강쪽은 큰 이상은 없으며, 양쪽 눈 내안각쪽에 마른 노란 눈꼽만 소량 관찰되었습니다. URTD (고양이 상부 호흡기 질환) 이 만성적으로 있을 가능성이 높으며, 코가 삼출물로 많이 막히거나, 결막염 증세, 재채기 등이 동반될 경우에는 증상완화를 위해 내복약을 고려해보실 수 있습니다. 평소 습도 관리, 네뷸라이저 관리 등을 해주시는 것도 좋습니다." },
-  { title: "만성URTD-단두종", desc: "⏹ 눈물량증가/ 신체검사상 눈물량 증가가 확인되며, 해부학적인 구조, 눈물관 폐색 원인이 있을 것으로 생각됩니다. 다만 호흡기증상 (재채기, 콧물)등이 동반될 경우, 허피스 감염이 동반되어 있을 수 있어, 치료여부를 상담하시는 것을 추천드립니다." },
-  { title: "검갈색정상귀지", desc: "⏹ 검갈색귀지/ 양측 이도내 검갈색 귀지가 있는 편입니다. 염증, 부종 등 외이염 소견은 확인되지 않아, 종종 자극되지 않을 정도로 닦아주시면 됩니다." }
-];
-
-/*********************************
- * 3) 종합 소견 — 태그 팔레트 기능 (요청 반영)
- *********************************/
-
-/* 엑셀에서 변환해 온 템플릿(대분류/중분류/태그/내용) */
-const OVERALL_TAGS = [
-  {"cat":"신체검사","sub":"총평","tag":"총평-양호","text":"()는 금일 건강검진 검사결과상 전반적으로 양호한 상태입니다."},
-  {"cat":"신체검사","sub":"총평","tag":"총평-소견유","text":"()는 금일 건강검진 검사결과상 몇가지 소견이 확인되었습니다. "},
-  {"cat":"신체검사","sub":"혈압","tag":"고혈압-재측정","text":"금일 혈압이 [  ] 으로 고혈압이 확인되었습니다. 스트레스 상황에서 일시적으로 상승했을 가능성이 있습니다. 평소 아이가 보이는 스트레스 경향과 내원 당시의 상태를 고려한 합리적인 판단이 필요합니다. 차후에는 과긴장 상태를 방지하기 위해 안정제 복용 후 내원하여 재측정해보시는 방법도 추천드립니다. "},
-  {"cat":"신체검사","sub":"혈압","tag":"고혈압-치료필요","text":"전신성 고혈압이 확인됩니다. 현재는 큰 이상을 일으키지 않고 있으나, 지속적으로 유지 될 경우 특정 장기(신장, 눈, 뇌 등)에 데미지를 줄 가능성이 있어, 관리가 필요합니다.  "},
-  {"cat":"신체검사","sub":"순응도","tag":"공격성(위험)","text":"가족 이외의 사람에 대한 공격성이 위험한 수준입니다. 공격성을 유발할 만한 건강 검진 결과 상의 특이 소견은 확인되지 않습니다. 공격성은 습관 교정, 환경 조성 등 장기적 관리가 필요하며, 보상과 처벌의 균형 및 적절한 트레이닝이 필요합니다. 공격성이 유발될 만한 상황에 대한 회피 노력, 내복약 복용 등 지속적인 치료 및 상담을 추천드립니다. "},
-  {"cat":"신체검사","sub":"순응도","tag":"내원스트레스","text":"내원시 케이지 내 배뇨, 검사 시 개구호흡 증상 등, 아이가 외출 스트레스를 많이 받는 편입니다. 과도한 스트레스 환경을 줄일 수 있도록 사전 진정제 복용, 병원 체류시간 단축, 동선 최소화 등으로 접근하는 것을 권장드립니다. "},
-  {"cat":"신체검사","sub":"순응도","tag":"내원스트레스","text":"비비는 병원으로의 이동, 병원 환경과 핸들링에 쉽게 불안감을 느끼는 아이입니다. 공격성은 없지만 스트레스를 최소화할 수 있도록, 사전 진정제 복용, 동선 최소화 등을 권장드립니다. "},
-  {"cat":"신체검사","sub":"혈당","tag":"혈당-재검사","text":"금일 혈당이 다소 높게 측정되었습니다. 일시적인 스트레스성 고혈당 가능성이 높을것으로 생각되나, 지속적 고혈당 혹은 당뇨 관련 증상(다음다뇨, 다식, 체중감소 등) 여부에 따라 추가 평가를 고려해볼 수 있습니다. "},
-  {"cat":"신체검사","sub":"혈당","tag":"혈당-스트레스","text":"일시적인 스트레스성으로 생각되는 고혈당증이 확인되었습니다. 최근 2주간의 혈당을 확인할 수 있는 프럭토사민 수치 측정을 고려해볼 수 있습니다. "},
-  {"cat":"혈액검사","sub":"CBC","tag":"빈혈-경미","text":"경미한 빈혈 소견이 있습니다. 특정 감염증, 만성 염증성 상태, 출혈, 호르몬 문제 등 다양한 원인이 있을 수 있으며, 증상 여부와 연동하여 모니터링을 권장합니다. "},
-  {"cat":"혈액검사","sub":"CBC","tag":"빈혈-중증","text":"중증의 빈혈 소견이 확인됩니다. 증상이 동반되면 응급 치료가 필요할 수 있으므로, 보호자분의 관찰 하에 호흡수 증가/무기력/잇몸색 창백 등의 증상이 있을 경우 즉시 내원해주세요. "},
-  {"cat":"혈액검사","sub":"CBC","tag":"염증수치-증가","text":"염증성 변화가 의심되는 수치상 증가가 확인됩니다. 임상증상과 함께 해석하며, 필요시 추가 평가 및 항생제 치료를 고려합니다. "},
-  {"cat":"혈액검사","sub":"CBC","tag":"혈소판-감소","text":"혈소판 감소가 확인됩니다. 출혈 경향성 증가 가능성이 있으므로 타박상/점상출혈 여부를 관찰하고, 심할 경우 추가 검사 및 치료가 필요할 수 있습니다. "},
-  {"cat":"혈액검사","sub":"CHEM","tag":"간수치-경미증가","text":"간수치가 경미하게 증가해 있습니다. 고양이에서 비특이적으로 일시적 상승이 잦으나, 재검으로 추이를 보거나 필요시 추가 평가를 권장합니다. "},
-  {"cat":"혈액검사","sub":"CHEM","tag":"간수치-현저증가","text":"간수치가 현저히 증가해 있습니다. 식욕저하/무기력/구토/황달 등 증상 여부를 확인하며, 복부초음파 등 추가 평가 및 치료가 필요할 수 있습니다. "},
-  {"cat":"혈액검사","sub":"CHEM","tag":"신장수치-경미증가","text":"신장 관련 수치가 경미하게 증가해 있습니다. 탈수/스트레스 등 일시적 요인도 가능하므로 수분섭취와 증상을 확인하며, 재검으로 추이를 관찰합니다. "},
-  {"cat":"혈액검사","sub":"CHEM","tag":"신장수치-진행","text":"신장 관련 수치의 진행성 상승이 확인됩니다. 신장질환 가능성이 높아 추가 평가 및 식이/수액 등 치료계획이 필요합니다. "},
-  {"cat":"혈액검사","sub":"기타","tag":"당화알부민","text":"최근 2~3주간의 평균 혈당을 반영하는 당화알부민 검사를 고려할 수 있습니다. "},
-  {"cat":"방사선","sub":"관절","tag":"관절-퇴행","text":"관절 부위에서 퇴행성 변화가 의심됩니다. 통증 여부에 따라 소염진통제/보조제/체중조절 등을 고려합니다. "},
-  {"cat":"방사선","sub":"심장","tag":"심장-확대의심","text":"심장실/심방의 확대가 의심됩니다. 심장초음파를 통해 구조적 이상 여부를 추가 평가할 수 있습니다. "},
-  {"cat":"방사선","sub":"신장","tag":"신장-석회음영","text":"신장 주변 석회화 음영이 의심됩니다. 임상증상과 함께 해석하며, 복부초음파로 추가 확인이 권장됩니다. "},
-  {"cat":"방사선","sub":"흉부","tag":"폐렴의심","text":"폐실질에서 염증성 음영이 의심됩니다. 증상과 혈액검사 소견을 함께 확인하며 항생제 치료를 고려합니다. "},
-  {"cat":"복부초음파","sub":"췌장","tag":"췌장염의심","text":"췌장 부위에서 염증성 변화가 의심됩니다. 혈액검사(췌장 특이 마커)와 함께 해석하며 대증치료를 고려합니다. "},
-  {"cat":"복부초음파","sub":"신장","tag":"신장-변화","text":"신장 피질/수질 경계가 흐릿하거나 에코 변화를 보입니다. 소변검사/혈액검사와 함께 종합 평가가 필요합니다. "},
-  {"cat":"복부초음파","sub":"방광","tag":"방광염의심","text":"방광벽 비후/침전물이 확인되어 방광염이 의심됩니다. 소변 배양검사와 항생제 치료를 고려합니다. "},
-  {"cat":"복부초음파","sub":"소화기","tag":"장염의심","text":"장벽 두께/층화 패턴의 변화가 있어 장염이 의심됩니다. 증상과 함께 대증치료를 고려합니다. "},
-  {"cat":"소변검사","sub":"뇨침사","tag":"결정뇨","text":"소변 침사에서 결정이 확인됩니다. 수분섭취 증가, 식이조절, 필요시 약물치료를 고려합니다. "},
-  {"cat":"소변검사","sub":"뇨비중","tag":"저비중","text":"소변 비중이 낮습니다. 신장 및 내분비 질환 감별을 위해 추가 평가가 필요할 수 있습니다. "},
-  {"cat":"소변검사","sub":"뇨스틱","tag":"혈뇨/단백뇨","text":"스틱 검사에서 혈뇨/단백뇨 등이 확인되었습니다. 감염/결석/염증 가능성을 평가합니다. "},
-  {"cat":"특정질환","sub":"심장","tag":"HCM의심","text":"심근비대증(HCM)이 의심됩니다. 심장초음파 정밀검사를 권장합니다. "},
-  {"cat":"특정질환","sub":"신장","tag":"CKD의심","text":"만성 신장질환이 의심됩니다. 단계 평가 후 식이/수액/약물치료 계획을 논의합니다. "},
-  {"cat":"특정질환","sub":"PKD","tag":"PKD양성","text":"다낭신(PKD) 양성 소견입니다. 진행 모니터링 및 신장 보호 관리가 필요합니다. "},
-  {"cat":"특정질환","sub":"연골이형성증","tag":"CD의심","text":"연골이형성증이 의심됩니다. 방사선/유전학적 평가를 고려할 수 있습니다. "},
-  {"cat":"마무리멘트","sub":"기타","tag":"종합-추가안내","text":"필요 시 추가 검사(영상/혈액/소변) 및 생활습관 교정(식이/운동/환경)을 안내드립니다. "}
-];
-
-/* 각 행에 고유 id 부여 (중복 태그 구분) */
-const TAGS = OVERALL_TAGS.map((r, idx) => ({ ...r, _id: idx }));
-
-/* 중분류별 색상(연한/선택 시 진한) */
-const SUBCOLOR = {
-  "신체검사": { "총평":"blue","혈압":"emerald","순응도":"amber","혈당":"violet" },
-  "혈액검사": { "CBC":"blue","CHEM":"emerald","기타":"amber" },
-  "방사선":   { "관절":"blue","심장":"emerald","신장":"amber","흉부":"violet" },
-  "복부초음파":{ "췌장":"blue","신장":"emerald","방광":"amber","소화기":"violet" },
-  "소변검사": { "뇨침사":"blue","뇨비중":"emerald","뇨스틱":"amber" },
-  "특정질환": { "심장":"blue","신장":"emerald","PKD":"amber","연골이형성증":"violet" },
-  "마무리멘트": { "기타":"blue" }
-};
-/* Tailwind 클래스 매핑(정적 문자열로 선언: JIT purge 방지) */
-const COLOR_STYLE = {
-  blue:   { off:"bg-blue-50 text-blue-800 border-blue-200",   on:"bg-blue-600 text-white border-blue-600" },
-  emerald:{ off:"bg-emerald-50 text-emerald-800 border-emerald-200", on:"bg-emerald-600 text-white border-emerald-600" },
-  amber:  { off:"bg-amber-50 text-amber-800 border-amber-200", on:"bg-amber-600 text-white border-amber-600" },
-  violet: { off:"bg-violet-50 text-violet-800 border-violet-200", on:"bg-violet-600 text-white border-violet-600" },
-  rose:   { off:"bg-rose-50 text-rose-800 border-rose-200", on:"bg-rose-600 text-white border-rose-600" },
-  teal:   { off:"bg-teal-50 text-teal-800 border-teal-200", on:"bg-teal-600 text-white border-teal-600" },
-  indigo: { off:"bg-indigo-50 text-indigo-800 border-indigo-200", on:"bg-indigo-600 text-white border-indigo-600" },
-  fuchsia:{ off:"bg-fuchsia-50 text-fuchsia-800 border-fuchsia-200", on:"bg-fuchsia-600 text-white border-fuchsia-600" },
-  sky:    { off:"bg-sky-50 text-sky-800 border-sky-200", on:"bg-sky-600 text-white border-sky-600" },
-  lime:   { off:"bg-lime-50 text-lime-800 border-lime-200", on:"bg-lime-600 text-white border-lime-600" },
-};
-
-/* picks 키 → 템플릿의 대분류 이름 */
-const PICK_TO_CAT = {
-  physical: "신체검사",
-  cbc: "혈액검사",
-  chem: "혈액검사",
-  ua: "소변검사",
-  xr: "방사선",
-  us: "복부초음파",
-  disease: "특정질환",
-};
-
-/* 종합 소견 기본 상태 (요청대로 diseaseNote 제거) */
-const defaultOverall = {
-  picks: { physical: true, cbc: false, chem: false, ua: false, xr: false, us: false, disease: false },
-  addenda: "",
-  tagSel: {}, // { [id]: true }
-};
-
-// 기존 makeOverallText를 ↓ 이걸로 교체
-function makeOverallText(o /*, physText*/){
-  const sel = o.picks || {};
-  const lines = [];
-
-  // ✅ 대분류 기본 설명줄 전부 삭제 (아무 것도 push 안 함)
-
-  // ✅ 태그 선택분: [대분류] 헤더 없이, 각 줄 앞에 '⏹ '
-  const picked = Object.keys(o.tagSel || {}).filter(id => o.tagSel[id]);
-  if (picked.length){
-    for (const t of TAGS){
-      if (picked.includes(String(t._id))){
-        const txt = (t.text || "").trim();
-        if (txt) lines.push(`⏹ ${txt}`);
-      }
-    }
-  }
-
-  // ✅ 추가 안내 (있을 때만)
-  if (o.addenda?.trim()) lines.push(`추가 안내: ${o.addenda.trim()}`);
-
-  return lines.join("\n");
-}
-
-
-  // ✅ 추가 안내 (있을 때만)
-  if (o.addenda?.trim()) lines.push(`추가 안내: ${o.addenda.trim()}`);
-
-  return lines.join("\n");
-}
-
-function OverallAssessmentCard(){
-  const [o, setO] = useState(loadLS(key.overall, defaultOverall));
-  const preview = useMemo(()=> makeOverallText(o), [o]);
-  useEffect(()=> { saveLS(key.overall, o); emitChange(); }, [o]);
-
-  // 선택된 대분류들(체크박스 → 대분류 이름셋)
-  const activeCats = useMemo(()=>{
-    const s = new Set();
-    for (const k of Object.keys(o.picks||{})) if (o.picks[k]) {
-      const cat = PICK_TO_CAT[k];
-      if (cat) s.add(cat);
-    }
-    return s;
-  }, [o.picks]);
-
-  // 태그 후보(선택된 대분류만)
-  const tagPool = useMemo(()=> TAGS.filter(r => activeCats.has(r.cat)), [activeCats]);
-
-  function togglePick(k){ setO(prev => ({ ...prev, picks: { ...prev.picks, [k]: !prev.picks[k] }})); }
-  function toggleTag(id){ setO(prev => ({ ...prev, tagSel: { ...prev.tagSel, [id]: !prev.tagSel?.[id] }})); }
-
-  return (
-    <Card title="③ 종합 소견" subtitle="검사 선택 → 태그 클릭으로 상세 문구 추가" right={<CopyBtn text={preview} />}>
-      {/* 체크박스 */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-        {Object.entries(o.picks).map(([k,v])=> (
-          <label key={k} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50">
-            <input type="checkbox" checked={v} onChange={()=> togglePick(k)} />
-            <span className="text-sm">{
-              ({
-                physical: "신체검사", cbc: "혈액검사(CBC)", chem: "혈액화학(Chem)",
-                ua: "뇨검사(UA)", xr: "방사선", us: "복부초음파", disease: "특정질환"
-              })[k]
-            }</span>
-          </label>
-        ))}
-      </div>
-
-      {/* 태그 팔레트 */}
-      {tagPool.length > 0 && (
-        <div className="mt-4">
-          <div className="mb-1 text-sm font-medium text-slate-700">태그 선택</div>
-          <div className="flex flex-wrap gap-2">
-            {tagPool.map((row) => {
-              const picked = !!(o.tagSel && o.tagSel[row._id]);
-              const color = (SUBCOLOR[row.cat] && SUBCOLOR[row.cat][row.sub]) || "blue";
-              const style = COLOR_STYLE[color] || COLOR_STYLE.blue;
-              return (
-                <button
-                  key={`${row._id}`}
-                  className={`px-2 py-1 text-xs rounded-lg border active:scale-[.98] ${picked ? style.on : style.off}`}
-                  title={`${row.cat} · ${row.sub}`}
-                  onClick={()=> toggleTag(String(row._id))}
-                >
-                  {row.tag}
-                </button>
-              );
-            })}
-          </div>
-          <div className="mt-1 text-xs text-slate-500">* 중분류는 버튼 색으로만 구분됩니다(문구에는 표시하지 않음).</div>
-        </div>
-      )}
-
-      {/* 자유 입력 — 요청대로 특정질환 입력 제거, 추가안내만 전체너비 */}
-      <div className="mt-3">
-        <Field label="추가 안내 문구 (선택)">
-          <TextArea
-            value={o.addenda}
-            onChange={(v)=> setO({ ...o, addenda: v })}
-            rows={6}
-            placeholder="식이/운동/재검 권장 등"
-          />
-        </Field>
-      </div>
-
-      {/* 미리보기 */}
-      <div className="mt-3">
-        <Field label="미리보기">
-          <TextArea value={preview} onChange={()=>{}} rows={8} />
-        </Field>
-      </div>
-    </Card>
-  );
-}
-
-/*********************************
- * 우측 패널: 출력 & 폴리셔
- *********************************/
-function OutputPanel(){
-  const compute = () => {
-    const phys = loadLS(key.phys, defaultPhys);
-    const dental = loadLS(key.dental, defaultDental);
-    const overall = loadLS(key.overall, defaultOverall);
-    const physText = makePhysText(phys);
-    const dentalText = makeDentalText(dental);
-    const overallText = makeOverallText(overall); // ← physText 더 이상 전달하지 않음
-    return `【신체검사】\n${physText}\n\n【치과 소견】\n${dentalText}\n\n【종합 소견】\n${overallText}`;
-  };
-  const [txt, setTxt] = useState(compute());
-  useEffect(()=>{ const h=()=> setTxt(compute()); window.addEventListener('vetreport-change',h); return ()=> window.removeEventListener('vetreport-change',h); },[]);
-  useEffect(()=> saveLS(key.output, txt), [txt]);
-  return (
-    <Card title="최종 건강검진 소견 " subtitle="전체 섹션 문구 취합" right={<CopyBtn text={txt} />}>
-      <TextArea value={txt} onChange={setTxt} rows={20} />
-      <div className="mt-2 text-xs text-slate-500">Tip: 섹션을 수정하면 이 영역이 자동 갱신됩니다. (이 창에서 수동 수정도 가능).</div>
-    </Card>
-  );
-}
-function PolisherPanel(){
-  const [input, setInput] = useState("");
-  const [out, setOut] = useState("");
-  function tidy(text){ return text.replace(/\s+\./g, ".").replace(/\s{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim(); }
-  return (
-    <Card title="문장 다듬기" subtitle="간단한 공백/줄바꿈 정리">
-      <Field label="원문"><TextArea value={input} onChange={setInput} rows={6} placeholder="자유 입력" /></Field>
-      <div className="mt-2 flex items-center gap-2">
-        <button onClick={()=> setOut(tidy(input))} className="rounded-xl bg-slate-900 text-white px-4 py-2">문장 다듬기</button>
-        <CopyBtn text={out} />
-      </div>
-      <div className="mt-2"><Field label="결과"><TextArea value={out} onChange={setOut} rows={8} /></Field></div>
-    </Card>
-  );
-}
-
-/*********************************
- * 도움말 패널
- *********************************/
-function AboutPanel(){
-  return (
-    <Card title="도움말" subtitle="설계 목표 & 사용 팁">
-      <ul className="list-disc pl-5 space-y-1 text-sm text-slate-700">
-        <li>모든 출력에는 <b>복사</b> 버튼이 있어 차트에 바로 붙여넣기 가능</li>
-        <li>데이터는 브라우저 <b>localStorage</b>에 저장되어 재방문 시 유지</li>
-      </ul>
-      <div className="mt-3 text-sm text-slate-500">
-        <b>다음 단계 제안</b>
-        <ol className="list-decimal pl-5 mt-1 space-y-1">
-          <li>복합소견 룰(조건부) 빌더 — 예: BCS≥7 & 치석 G3↑ → 자동 권고</li>
-          <li>혈액/뇨/영상 결과 템플릿 라이브러리 추가 (향후 선택)</li>
-          <li>PWA 패키징 — 오프라인 사용 & 바탕화면 설치</li>
-        </ol>
-      </div>
-    </Card>
-  );
-}
-
-/*********************************
- * 치과 텍스트 조립 함수
- *********************************/
 function makeDentalText(d){
   const lines = [];
   lines.push(_pickDentalDesc("status", d.status));
@@ -668,6 +391,226 @@ function DentalFindingsCard(){
       </div>
       <div className="mt-3">
         <Field label="미리보기"><TextArea value={text} onChange={()=>{}} rows={6} /></Field>
+      </div>
+    </Card>
+  );
+}
+
+/*********************************
+ * 3) 종합 소견 — 태그 팔레트
+ *********************************/
+
+// 종합소견: 엑셀 원문 (cat/sub/tag/text) — 외부 JSON에서 불러옴
+const OVERALL_TAGS = templates.overall;
+/* 각 행에 고유 id 부여 (중복 태그 구분) */
+const TAGS = OVERALL_TAGS.map((r, idx) => ({ ...r, _id: idx }));
+
+/* 중분류별 색상(연한/선택 시 진한) — 범용 팔레트 */
+const SUBCOLOR = {
+  "신체검사": { "총평":"blue","혈압":"emerald","순응도":"amber","혈당":"violet" },
+  "혈액검사": { "CBC":"blue","CHEM":"emerald","기타":"amber" },
+  "방사선":   { "관절":"blue","심장":"emerald","신장":"amber","흉부":"violet" },
+  "복부초음파":{ "췌장":"blue","신장":"emerald","방광":"amber","소화기":"violet" },
+  "소변검사": { "뇨침사":"blue","뇨비중":"emerald","뇨스틱":"amber" },
+  "특정질환": { "심장":"blue","신장":"emerald","PKD":"amber","연골이형성증":"violet" },
+  "마무리멘트": { "기타":"blue" }
+};
+/* Tailwind 클래스 매핑(정적 문자열: JIT purge 방지) */
+const COLOR_STYLE = {
+  blue:   { off:"bg-blue-50 text-blue-800 border-blue-200",   on:"bg-blue-600 text-white border-blue-600" },
+  emerald:{ off:"bg-emerald-50 text-emerald-800 border-emerald-200", on:"bg-emerald-600 text-white border-emerald-600" },
+  amber:  { off:"bg-amber-50 text-amber-800 border-amber-200", on:"bg-amber-600 text-white border-amber-600" },
+  violet: { off:"bg-violet-50 text-violet-800 border-violet-200", on:"bg-violet-600 text-white border-violet-600" },
+  rose:   { off:"bg-rose-50 text-rose-800 border-rose-200", on:"bg-rose-600 text-white border-rose-600" },
+  teal:   { off:"bg-teal-50 text-teal-800 border-teal-200", on:"bg-teal-600 text-white border-teal-600" },
+  indigo: { off:"bg-indigo-50 text-indigo-800 border-indigo-200", on:"bg-indigo-600 text-white border-indigo-600" },
+  fuchsia:{ off:"bg-fuchsia-50 text-fuchsia-800 border-fuchsia-200", on:"bg-fuchsia-600 text-white border-fuchsia-600" },
+  sky:    { off:"bg-sky-50 text-sky-800 border-sky-200", on:"bg-sky-600 text-white border-sky-600" },
+  lime:   { off:"bg-lime-50 text-lime-800 border-lime-200", on:"bg-lime-600 text-white border-lime-600" },
+};
+
+/* picks 키 → 템플릿의 대분류 이름 */
+const PICK_TO_CAT = {
+  physical: "신체검사",
+  cbc: "혈액검사",
+  chem: "혈액검사",
+  ua: "소변검사",
+  xr: "방사선",
+  us: "복부초음파",
+  disease: "특정질환",
+};
+
+/* 종합 소견 기본 상태 */
+const defaultOverall = {
+  picks: { physical: true, cbc: false, chem: false, ua: false, xr: false, us: false, disease: false },
+  addenda: "",
+  tagSel: {}, // { [id]: true }
+};
+
+/* 미리보기 조립 — 대분류 기본설명 제거 */
+function makeOverallText(o){
+  const lines = [];
+
+  // (요청) 대분류 기본 설명줄은 전부 제거
+
+  // 태그 선택분: [대분류] 헤더 없이, 각 줄 앞 '⏹ '
+  const picked = Object.keys(o.tagSel || {}).filter(id => o.tagSel[id]);
+  if (picked.length){
+    for (const t of TAGS){
+      if (picked.includes(String(t._id))){
+        const txt = (t.text || "").trim();
+        if (txt) lines.push(`⏹ ${txt}`);
+      }
+    }
+  }
+
+  // 추가 안내 (있을 때만)
+  if (o.addenda?.trim()) lines.push(`추가 안내: ${o.addenda.trim()}`);
+
+  return lines.join("\n");
+}
+
+function OverallAssessmentCard(){
+  const [o, setO] = useState(loadLS(key.overall, defaultOverall));
+  const preview = useMemo(()=> makeOverallText(o), [o]);
+  useEffect(()=> { saveLS(key.overall, o); emitChange(); }, [o]);
+
+  // 선택된 대분류들(체크박스 → 대분류 이름셋)
+  const activeCats = useMemo(()=>{
+    const s = new Set();
+    for (const k of Object.keys(o.picks||{})) if (o.picks[k]) {
+      const cat = PICK_TO_CAT[k];
+      if (cat) s.add(cat);
+    }
+    return s;
+  }, [o.picks]);
+
+  // 태그 후보(선택된 대분류만)
+  const tagPool = useMemo(()=> TAGS.filter(r => activeCats.has(r.cat)), [activeCats]);
+
+  function togglePick(k){ setO(prev => ({ ...prev, picks: { ...prev.picks, [k]: !prev.picks[k] }})); }
+  function toggleTag(id){ setO(prev => ({ ...prev, tagSel: { ...prev.tagSel, [id]: !prev.tagSel?.[id] }})); }
+
+  return (
+    <Card title="③ 종합 소견" subtitle="검사 선택 → 태그 클릭으로 상세 문구 추가" right={<CopyBtn text={preview} />}>
+      {/* 체크박스 */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        {Object.entries(o.picks).map(([k,v])=> (
+          <label key={k} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50">
+            <input type="checkbox" checked={v} onChange={()=> togglePick(k)} />
+            <span className="text-sm">{
+              ({
+                physical: "신체검사", cbc: "혈액검사(CBC)", chem: "혈액화학(Chem)",
+                ua: "뇨검사(UA)", xr: "방사선", us: "복부초음파", disease: "특정질환"
+              })[k]
+            }</span>
+          </label>
+        ))}
+      </div>
+
+      {/* 태그 팔레트 */}
+      {tagPool.length > 0 && (
+        <div className="mt-4">
+          <div className="mb-1 text-sm font-medium text-slate-700">태그 선택</div>
+          <div className="flex flex-wrap gap-2">
+            {tagPool.map((row) => {
+              const picked = !!(o.tagSel && o.tagSel[row._id]);
+              const color = (SUBCOLOR[row.cat] && SUBCOLOR[row.cat][row.sub]) || "blue";
+              const style = COLOR_STYLE[color] || COLOR_STYLE.blue;
+              return (
+                <button
+                  key={`${row._id}`}
+                  className={`px-2 py-1 text-xs rounded-lg border active:scale-[.98] ${picked ? style.on : style.off}`}
+                  title={`${row.cat} · ${row.sub}`}
+                  onClick={()=> toggleTag(String(row._id))}
+                >
+                  {row.tag}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-1 text-xs text-slate-500">* 중분류는 버튼 색으로만 구분됩니다(문구에는 표시하지 않음).</div>
+        </div>
+      )}
+
+      {/* 자유 입력 — 특정질환 입력 제거, 추가안내만 전체너비 */}
+      <div className="mt-3">
+        <Field label="추가 안내 문구 (선택)">
+          <TextArea
+            value={o.addenda}
+            onChange={(v)=> setO({ ...o, addenda: v })}
+            rows={6}
+            placeholder="식이/운동/재검 권장 등"
+          />
+        </Field>
+      </div>
+
+      {/* 미리보기 */}
+      <div className="mt-3">
+        <Field label="미리보기">
+          <TextArea value={preview} onChange={()=>{}} rows={8} />
+        </Field>
+      </div>
+    </Card>
+  );
+}
+
+/*********************************
+ * 우측 패널: 출력 & 폴리셔
+ *********************************/
+function OutputPanel(){
+  const compute = () => {
+    const phys = loadLS(key.phys, defaultPhys);
+    const dental = loadLS(key.dental, defaultDental);
+    const overall = loadLS(key.overall, defaultOverall);
+    const physText = makePhysText(phys);
+    const dentalText = makeDentalText(dental);
+    const overallText = makeOverallText(overall);
+    return `【신체검사】\n${physText}\n\n【치과 소견】\n${dentalText}\n\n【종합 소견】\n${overallText}`;
+  };
+  const [txt, setTxt] = useState(compute());
+  useEffect(()=>{ const h=()=> setTxt(compute()); window.addEventListener('vetreport-change',h); return ()=> window.removeEventListener('vetreport-change',h); },[]);
+  useEffect(()=> saveLS(key.output, txt), [txt]);
+  return (
+    <Card title="최종 건강검진 소견 " subtitle="전체 섹션 문구 취합" right={<CopyBtn text={txt} />}>
+      <TextArea value={txt} onChange={setTxt} rows={20} />
+      <div className="mt-2 text-xs text-slate-500">Tip: 섹션을 수정하면 이 영역이 자동 갱신됩니다. (이 창에서 수동 수정도 가능).</div>
+    </Card>
+  );
+}
+function PolisherPanel(){
+  const [input, setInput] = useState("");
+  const [out, setOut] = useState("");
+  function tidy(text){ return text.replace(/\s+\./g, ".").replace(/\s{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim(); }
+  return (
+    <Card title="문장 다듬기" subtitle="간단한 공백/줄바꿈 정리">
+      <Field label="원문"><TextArea value={input} onChange={setInput} rows={6} placeholder="자유 입력" /></Field>
+      <div className="mt-2 flex items-center gap-2">
+        <button onClick={()=> setOut(tidy(input))} className="rounded-xl bg-slate-900 text-white px-4 py-2">문장 다듬기</button>
+        <CopyBtn text={out} />
+      </div>
+      <div className="mt-2"><Field label="결과"><TextArea value={out} onChange={setOut} rows={8} /></Field></div>
+    </Card>
+  );
+}
+
+/*********************************
+ * 도움말 패널
+ *********************************/
+function AboutPanel(){
+  return (
+    <Card title="도움말" subtitle="설계 목표 & 사용 팁">
+      <ul className="list-disc pl-5 space-y-1 text-sm text-slate-700">
+        <li>모든 출력에는 <b>복사</b> 버튼이 있어 차트에 바로 붙여넣기 가능</li>
+        <li>데이터는 브라우저 <b>localStorage</b>에 저장되어 재방문 시 유지</li>
+      </ul>
+      <div className="mt-3 text-sm text-slate-500">
+        <b>다음 단계 제안</b>
+        <ol className="list-decimal pl-5 mt-1 space-y-1">
+          <li>복합소견 룰(조건부) 빌더 — 예: BCS≥7 & 치석 G3↑ → 자동 권고</li>
+          <li>혈액/뇨/영상 결과 템플릿 라이브러리 추가 (향후 선택)</li>
+          <li>PWA 패키징 — 오프라인 사용 & 바탕화면 설치</li>
+        </ol>
       </div>
     </Card>
   );
