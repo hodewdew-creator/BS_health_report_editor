@@ -13,17 +13,10 @@ import SuggestTemplateModal from "./components/SuggestTemplateModal";
  *    - SuggestTemplateModal 호출 부분에 onSubmit 추가
  *    - 예시:
  *      <SuggestTemplateModal
- *        open={suggestOpen}
- *        onClose={()=>setSuggestOpen(false)}
- *        onSubmit={async (payload)=>{
- *          await fetch("/api/suggest", {
- *            method: "POST",
- *            headers: { "Content-Type": "application/json" },
- *            body: JSON.stringify(payload)
- *          });
- *          alert("제안이 저장되었습니다.");
- *        }}
- *      />
+        open={suggestOpen}
+        onClose={()=>setSuggestOpen(false)}
+        onSubmit={handleTemplateSuggestion}
+      />
  *
  * 3) Vercel 서버리스 API 추가
  *    - /api/suggest.js: 제안 내용을 main 레포의 suggestions/pending 폴더에 JSON 파일로 커밋
@@ -48,15 +41,34 @@ export default function App() {
   // ⬇️ 제안 모달 상태
   const [suggestOpen, setSuggestOpen] = useState(false);
 
+  // ⬇️ 템플릿 제안 제출 핸들러 (2단계)
+  const handleTemplateSuggestion = async (payload) => {
+    try {
+      const r = await fetch("/api/suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      let data = {};
+      try { data = await r.json(); } catch {}
+      if (!r.ok) {
+        alert("저장 실패: " + (data?.error || r.status));
+        return;
+      }
+      alert("제안이 저장되었습니다. (관리자 확인 후 반영)");
+    } catch (e) {
+      alert("네트워크 오류: " + e);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 antialiased">
       <Header tab={tab} onTab={setTab} onSuggest={()=>setSuggestOpen(true)} />
       {/* 제안 모달 */}
       <SuggestTemplateModal
         open={suggestOpen}
-        onClose={()=>setSuggestOpen(false)}
-        // onSubmit 추가 필요 (위 가이드 참조)
-      />
+        onClose={()=>setSuggestOpen(false)}        onSubmit={handleTemplateSuggestion}
+/>
 
       <main className="mx-auto max-w-6xl p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-4">
