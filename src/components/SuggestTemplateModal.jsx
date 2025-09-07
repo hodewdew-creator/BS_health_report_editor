@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import templates from "./data/templates.json";
 import SuggestTemplateModal from "./components/SuggestTemplateModal";
 
 /** 
