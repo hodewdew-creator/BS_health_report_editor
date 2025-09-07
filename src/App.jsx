@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import templates from "./data/templates.json";
+
 import SuggestTemplateModal from "./components/SuggestTemplateModal";
 
 /**
@@ -73,14 +73,18 @@ function loadLS(k, fallback) {
 }
 function emitChange(){ try { window.dispatchEvent(new Event('vetreport-change')); } catch {} }
 function clampBlanks(s){
-  return (s || "").replace(/
+  return (s || "")
+    .replace(/
 /g, "
-").replace(/
+")
+    .replace(/
 {3,}/g, "
 
-").replace(/[ 	]+
+")
+    .replace(/[ 	]+
 /g, "
-").trim();
+")
+    .trim();
 }
 
 function Card({ title, subtitle, children, right }) {
