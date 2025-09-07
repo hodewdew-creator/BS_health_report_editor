@@ -3,7 +3,7 @@ import templates from "./data/templates.json";
 import SuggestTemplateModal from "./components/SuggestTemplateModal";
 
 /**
- * App.jsx — with "템플릿 문구 제안" integration
+ * App.jsx — with "템플릿 문구 제안" integration (fixed JS operators)
  * - 태그 선택 칩: 옅은 노랑(amber) 스타일
  * - 종합소견: CBC/Chem → "혈액검사" 통합, 중분류 오른쪽에 태그(한 줄), 모바일에서는 wrap
  * - 글씨 가독성 강화(slate-950/900)
@@ -13,6 +13,7 @@ import SuggestTemplateModal from "./components/SuggestTemplateModal";
  * - Header: 로고 2배, 제목 변경/크기 업, MVP 제거, '초기화' bold
  * - 종합소견 추가안내문구 placeholder 제거
  * - 템플릿 문구 제안 모달 연결
+ * - ✅ JS 논리연산자 수정: and→&&, or→||, 필요부분 옵셔널 체이닝 적용
  */
 
 // ===== Brand color (탭/주요 버튼) =====
@@ -563,14 +564,14 @@ function OverallAssessmentCard(){
     if (!qq) return tagPool;
     return tagPool.filter(r =>
       (r.tag && r.tag.toLowerCase().includes(qq)) ||
-      (r.text and r.text.toLowerCase().includes(qq))
+      (r.text?.toLowerCase().includes(qq))
     );
   }, [tagPool, q]);
 
   const grouped = useMemo(()=> {
     const g = new Map();
     for (const r of filtered){
-      const k = r.sub or "기타";
+      const k = r.sub || "기타";
       if (!g.has(k)) g.set(k, []);
       g.get(k).push(r);
     }
@@ -607,7 +608,7 @@ function OverallAssessmentCard(){
       </div>
 
       {/* 선택된 태그 트레이 */}
-      {selectedObjs.length > 0 and (
+      {selectedObjs.length > 0 && (
         <div className="mt-3">
           <div className="text-xs font-semibold text-slate-950 mb-1">선택된 태그</div>
           <div className="flex flex-wrap gap-2">
@@ -622,7 +623,7 @@ function OverallAssessmentCard(){
       )}
 
       {/* 태그 그룹: 중분류 오른쪽 같은 줄에 태그 (모바일은 wrap) */}
-      {grouped.length > 0 and (
+      {grouped.length > 0 && (
         <div className="mt-4 space-y-3">
           {grouped.map(([sub, rows]) => (
             <div key={sub} className="flex flex-wrap md:flex-nowrap items-start gap-3">
@@ -631,7 +632,7 @@ function OverallAssessmentCard(){
               </div>
               <div className="flex-1 min-w-0 flex flex-wrap gap-2">
                 {rows.map(row => {
-                  const picked = !!(o.tagSel and o.tagSel[row._id]);
+                  const picked = !!(o.tagSel && o.tagSel[row._id]);
                   return (
                     <button
                       key={row._id}
