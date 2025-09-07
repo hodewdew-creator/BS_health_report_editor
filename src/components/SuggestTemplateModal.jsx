@@ -1,90 +1,149 @@
-import React, { useEffect, useMemo, useState } from "react";
-import SuggestTemplateModal from "./components/SuggestTemplateModal";
+import React, { useEffect, useState } from "react";
 
-/** 
- * A안(메인에 쌓기) 최종 적용 단계별 가이드
- *
- * 1) UI 교체
- *    - SuggestTemplateModal.jsx를 v2 버전으로 교체 (이미 교체 완료)
- *    - 제출 시크릿 필드 제거, 신체검사/종합소견 구분 UI 반영
- *
- * 2) App.jsx에 onSubmit 연결
- *    - SuggestTemplateModal 호출 부분에 onSubmit 추가
- *    - 예시:
- *      <SuggestTemplateModal
-        open={suggestOpen}
-        onClose={()=>setSuggestOpen(false)}
-        onSubmit={handleTemplateSuggestion}
-      />
- *
- * 3) Vercel 서버리스 API 추가
- *    - /api/suggest.js: 제안 내용을 main 레포의 suggestions/pending 폴더에 JSON 파일로 커밋
- *    - /api/approve.js: 관리자 승인 시 templates.json에 반영하고, pending 파일 정리
- *
- * 4) Vercel 환경변수 설정
- *    - GITHUB_TOKEN (repo write 권한 있는 PAT)
- *
- * 5) (선택) 관리자용 검토 페이지 구현
- *    - suggestions/pending/*.json 목록 불러오기
- *    - 체크박스 선택 후 "확인" 버튼 → /api/approve.js 호출
- *
- * 👉 이 흐름으로 "사용자 제안 → suggestions/pending에 저장 → 관리자 확인 후 templates.json 반영" 가능
+/**
+ * SuggestTemplateModal — v2.1 (fixed)
+ * - templates.json을 import하지 않습니다.
+ * - 대상 분리: 종합소견 / 신체검사(육안검사)
+ * - 입력 필드: 대상에 따라 보이는 필드 달라짐
+ *   • 신체검사: [태그(버튼 이름)*, 내용(설명)*]
+ *   • 종합소견: [대분류*, 중분류(선택), 태그(버튼 이름)*, 내용(설명)*]
+ * - 제출 시크릿 제거
+ * - 필수값 유효성 검사 + 에러 메시지
+ * - ESC/배경 클릭으로 닫기
+ * - props: { open, onClose, onSubmit(payload) }
+ *   • payload (overall): { target:'overall', major, minor?, tag, text, proposer? }
+ *   • payload (physical): { target:'physical', tag, text, proposer? }
  */
 
-export default function App() {
-  const [tab, setTab] = useState(() => {
-    try { return localStorage.getItem("ui_tab") || "physical"; } catch { return "physical"; }
-  });
-  useEffect(()=> { try { localStorage.setItem("ui_tab", tab); } catch {} }, [tab]);
+export default function SuggestTemplateModal({ open, onClose, onSubmit }) {
+  const [target, setTarget] = useState("overall"); // overall | physical
 
-  // ⬇️ 제안 모달 상태
-  const [suggestOpen, setSuggestOpen] = useState(false);
+  // 공통
+  const [tag, setTag] = useState("");
+  const [text, setText] = useState("");
+  const [proposer, setProposer] = useState("");
 
-  // ⬇️ 템플릿 제안 제출 핸들러 (2단계)
-  const handleTemplateSuggestion = async (payload) => {
-    try {
-      const r = await fetch("/api/suggest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      let data = {};
-      try { data = await r.json(); } catch {}
-      if (!r.ok) {
-        alert("저장 실패: " + (data?.error || r.status));
-        return;
-      }
-      alert("제안이 저장되었습니다. (관리자 확인 후 반영)");
-    } catch (e) {
-      alert("네트워크 오류: " + e);
-    }
-  };
+  // 종합소견 전용
+  const [major, setMajor] = useState("");
+  const [minor, setMinor] = useState("");
+
+  const [err, setErr] = useState("");
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === "Escape") onClose?.(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  useEffect(() => { if (!open) reset(); }, [open]);
+
+  function reset(){
+    setTarget("overall"); setTag(""); setText(""); setProposer(""); setMajor(""); setMinor(""); setErr("");
+  }
+
+  function validate(){
+    if (!tag.trim()) return "태그(버튼 이름)을 입력해 주세요.";
+    if (!text.trim()) return "내용(설명)을 입력해 주세요.";
+    if (target === "overall" && !major.trim()) return "대분류를 입력해 주세요.";
+    return "";
+  }
+
+  function handleSubmit(){
+    const e = validate();
+    if (e) { setErr(e); return; }
+    const payload = target === "overall"
+      ? { target, major: major.trim(), minor: minor.trim(), tag: tag.trim(), text: text.trim(), proposer: proposer.trim() }
+      : { target, tag: tag.trim(), text: text.trim(), proposer: proposer.trim() };
+    try { onSubmit?.(payload); } finally { onClose?.(); }
+  }
+
+  if (!open) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 antialiased">
-      <Header tab={tab} onTab={setTab} onSuggest={()=>setSuggestOpen(true)} />
-      {/* 제안 모달 */}
-      <SuggestTemplateModal
-        open={suggestOpen}
-        onClose={()=>setSuggestOpen(false)}        onSubmit={handleTemplateSuggestion}
-/>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* backdrop */}
+      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
 
-      <main className="mx-auto max-w-6xl p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 space-y-4">
-          {tab === "physical" && <PhysicalExamCard />}
-          {tab === "dental" && <DentalFindingsCard />}
-          {tab === "overall" && <OverallAssessmentCard />}
+      {/* dialog */}
+      <div className="relative w-[min(720px,92vw)] rounded-2xl bg-white shadow-xl border border-slate-200 p-4 md:p-5">
+        <div className="flex items-start justify-between mb-3">
+          <div>
+            <div className="text-lg font-semibold text-slate-950">템플릿 문구 제안</div>
+            <div className="text-xs text-slate-600">대상에 맞는 필드만 보입니다.</div>
+          </div>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-700">닫기</button>
         </div>
 
-        <div className="lg:col-span-1 space-y-4 lg:sticky top-24 self-start">
-          <OutputPanel />
-          <PolisherPanel />
-          <AboutPanel />
+        {/* target switch */}
+        <div className="mb-3 flex items-center gap-3">
+          <label className="inline-flex items-center gap-2">
+            <input type="radio" name="target" value="overall" checked={target==="overall"} onChange={()=>setTarget("overall")} />
+            <span className="text-sm font-medium text-slate-900">종합소견</span>
+          </label>
+          <label className="inline-flex items-center gap-2">
+            <input type="radio" name="target" value="physical" checked={target==="physical"} onChange={()=>setTarget("physical")} />
+            <span className="text-sm font-medium text-slate-900">신체검사(육안검사)</span>
+          </label>
         </div>
-      </main>
-      <Footer />
+
+        {/* fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {target === "overall" && (
+            <>
+              <div className="md:col-span-1">
+                <Input label="대분류* (예: 혈액검사/소변/방사선/초음파/특정질환)" value={major} onChange={setMajor} />
+              </div>
+              <div className="md:col-span-1">
+                <Input label="중분류(선택)" value={minor} onChange={setMinor} />
+              </div>
+            </>
+          )}
+          <div className={target === "overall" ? "md:col-span-1" : "md:col-span-2"}>
+            <Input label="태그(버튼 이름)*" value={tag} onChange={setTag} />
+          </div>
+          <div className="md:col-span-2">
+            <Textarea label="내용(설명)*" value={text} onChange={setText} rows={6} />
+          </div>
+          <div className="md:col-span-2">
+            <Input label="제안자(선택)" value={proposer} onChange={setProposer} />
+          </div>
+        </div>
+
+        {err && <div className="mt-2 text-sm text-rose-600">{err}</div>}
+
+        <div className="mt-4 flex items-center justify-end gap-2">
+          <button onClick={onClose} className="h-9 px-3 rounded-xl border border-slate-300 text-sm text-slate-900 hover:bg-slate-50">취소</button>
+          <button onClick={handleSubmit} className="h-9 px-4 rounded-xl text-white bg-[#0F5E9C]">보내기</button>
+        </div>
+      </div>
     </div>
   );
 }
 
-// ✅ 요약: UI 교체 → onSubmit 연결 → /api/suggest & /api/approve 추가 → GITHUB_TOKEN 세팅 → (선택) 관리자 페이지
+function Input({ label, value, onChange }) {
+  return (
+    <label className="block">
+      <div className="mb-1 text-sm font-semibold text-slate-950">{label}</div>
+      <input
+        className="w-full rounded-xl border border-slate-300 px-3 py-2 text-slate-950"
+        value={value}
+        onChange={(e)=> onChange(e.target.value)}
+      />
+    </label>
+  );
+}
+
+function Textarea({ label, value, onChange, rows=5 }) {
+  return (
+    <label className="block">
+      <div className="mb-1 text-sm font-semibold text-slate-950">{label}</div>
+      <textarea
+        className="w-full rounded-xl border border-slate-300 px-3 py-2 text-slate-950 resize-y"
+        rows={rows}
+        value={value}
+        onChange={(e)=> onChange(e.target.value)}
+      />
+    </label>
+  );
+}
