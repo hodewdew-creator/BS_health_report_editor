@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import templates from "./data/templates.json";
+import SuggestTemplateModal from "./components/SuggestTemplateModal";
 
 /**
  * App.jsx — UI Polish v5.1
@@ -19,14 +20,22 @@ const BRAND = { bg: "#0F5E9C", border: "#0F5E9C", text: "#ffffff" };
 const CHIP_ON_STYLE = { backgroundColor: "#FEF3C7", borderColor: "#FACC15", color: "#111827" }; // amber-100/400
 
 export default function App() {
-  const [tab, setTab] = useState(() => {
+  
+  const [suggestOpen, setSuggestOpen] = useState(false);const [tab, setTab] = useState(() => {
     try { return localStorage.getItem("ui_tab") || "physical"; } catch { return "physical"; }
   });
   useEffect(()=> { try { localStorage.setItem("ui_tab", tab); } catch {} }, [tab]);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 antialiased">
-      <Header tab={tab} onTab={setTab} />
+      <Header tab={tab} onTab={setTab} / onSuggest={()=>setSuggestOpen(true)} />
+
+<SuggestTemplateModal
+  open={suggestOpen}
+  onClose={()=>setSuggestOpen(false)}
+  secretHint="(공유된 코드)"
+/>
+
       <main className="mx-auto max-w-6xl p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-4">
           {tab === "physical" && <PhysicalExamCard />}
@@ -112,7 +121,7 @@ function CopyBtn({ text, label = "복사", className = "" }) {
 /*********************************
  * Header / Footer
  *********************************/
-function Header({ tab, onTab }) {
+function Header({ tab, onTab, onSuggest }) {
   return (
     <header className="sticky top-0 z-10 backdrop-blur bg-slate-50/85 border-b border-slate-200">
       <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-3.5">
@@ -143,6 +152,15 @@ function Header({ tab, onTab }) {
             >
               초기화
             </a>
+
+<button
+  onClick={onSuggest}
+  className="text-xs font-semibold text-slate-950 px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50"
+  title="새 템플릿 문구를 제안합니다"
+>
+  템플릿 문구 제안
+</button>
+
           </div>
         </div>
 
