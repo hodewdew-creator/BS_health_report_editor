@@ -407,7 +407,7 @@ const defaultDental = {
   tr: "의심 없음",
   missing: "없음",
   scaling: "권장되지 않음",
-  wrap: "평소 주기적인 치아관리 (양치) 및 구강 체크를 잘 해주시기 바랍니다.",
+  wrap: "- 평소 주기적인 치아관리 (양치) 및 구강 체크를 잘 해주시기 바랍니다.",
   note: "",
 };
 function DentalFindingsCard(){
@@ -434,7 +434,7 @@ function DentalFindingsCard(){
             {opts.calculus.map((g)=> <option key={g} value={g}>{g}</option>)}
           </select>
         </Field>
-        <Field label="골절 여부">
+        <Field label="파절 여부">
           <select className="w-full rounded-xl border border-slate-300 px-3 py-2 text-slate-950" value={d.fracture} onChange={(e)=> setD({ ...d, fracture: e.target.value })}>
             {opts.fracture.map((g)=> <option key={g} value={g}>{g}</option>)}
           </select>
@@ -705,7 +705,7 @@ function OutputPanel(){
   return (
     <Card
       title="최종 검진 소견"
-      subtitle="(전체 섹션 내용 취합)"
+      subtitle="(전체내용취합/수동수정&복사가능)"
       right={
         <div className="inline-flex items-center gap-2">
           <CopyBtn text={txt} />
@@ -723,7 +723,7 @@ function OutputPanel(){
       ) : (
         <div className="text-xs text-slate-900">접힌 상태입니다. “펼치기”를 눌러 내용을 확인하세요.</div>
       )}
-      <div className="mt-2 text-xs text-slate-900">Tip: 섹션을 수정하면 이 영역이 자동 갱신됩니다. (이 창에서 수동 수정도 가능)</div>
+      <div className="mt-2 text-xs text-slate-900">Tip: 섹션을 수정하면 이 영역이 자동 갱신됩니다. </div>
     </Card>
   );
 }
