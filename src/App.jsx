@@ -704,8 +704,8 @@ function OutputPanel(){
 
   return (
     <Card
-      title="최종 검진 소견"
-      subtitle="(전체내용취합/수동수정&복사가능)"
+      title="전체 소견 취합"
+      subtitle="(수동 수정 가능)"
       right={
         <div className="inline-flex items-center gap-2">
           <CopyBtn text={txt} />
@@ -739,7 +739,7 @@ function PolisherPanel(){
     );
   }
   return (
-    <Card title="AI 문장 다듬기" subtitle="(미구현상태입니다)">
+    <Card title="AI 문장 다듬기" subtitle="(차후 구현예정)">
       <Field label="원문"><TextArea value={input} onChange={setInput} rows={6} /></Field>
       <div className="mt-2 flex items-center gap-2">
         <button onClick={()=> setOut(tidy(input))} className="w-2/3 md:w-1/2 rounded-xl px-4 py-2 text-white" style={{ backgroundColor: BRAND.bg }}>문장 다듬기</button>
@@ -761,7 +761,6 @@ function AboutPanel(){
         <>
           <ul className="list-disc pl-5 space-y-1 text-sm text-slate-950">
             <li>각종 내용 템플릿 수정은 src/data/templates.json</li>
-            <li>우측 결과 패널은 접기/펼치기가 가능해 집중이 쉬워요.</li>
           </ul>
           <div className="mt-3 text-sm text-slate-950">
             <b>다음 단계 제안</b>
