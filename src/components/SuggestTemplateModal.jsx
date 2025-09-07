@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import templates from "./data/templates.json";
 import SuggestTemplateModal from "./components/SuggestTemplateModal";
 
-/**
+/** 
  * A안(메인에 쌓기) 최종 적용 단계별 가이드
  *
  * 1) UI 교체
