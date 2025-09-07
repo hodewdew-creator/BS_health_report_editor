@@ -1,52 +1,79 @@
-import { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import templates from "./data/templates.json";
+import SuggestTemplateModal from "./components/SuggestTemplateModal";
 
-export default function SuggestTemplateModal({ open, onClose, secretHint="" }){
-  const [category,setCategory]=useState(""); const [sub,setSub]=useState("");
-  const [tag,setTag]=useState(""); const [text,setText]=useState("");
-  const [notes,setNotes]=useState(""); const [submitter,setSubmitter]=useState("");
-  const [secret,setSecret]=useState(""); const [status,setStatus]=useState("");
-  if(!open) return null;
+/**
+ * A안(메인에 쌓기) 최종 적용 단계별 가이드
+ *
+ * 1) UI 교체
+ *    - SuggestTemplateModal.jsx를 v2 버전으로 교체 (이미 교체 완료)
+ *    - 제출 시크릿 필드 제거, 신체검사/종합소견 구분 UI 반영
+ *
+ * 2) App.jsx에 onSubmit 연결
+ *    - SuggestTemplateModal 호출 부분에 onSubmit 추가
+ *    - 예시:
+ *      <SuggestTemplateModal
+ *        open={suggestOpen}
+ *        onClose={()=>setSuggestOpen(false)}
+ *        onSubmit={async (payload)=>{
+ *          await fetch("/api/suggest", {
+ *            method: "POST",
+ *            headers: { "Content-Type": "application/json" },
+ *            body: JSON.stringify(payload)
+ *          });
+ *          alert("제안이 저장되었습니다.");
+ *        }}
+ *      />
+ *
+ * 3) Vercel 서버리스 API 추가
+ *    - /api/suggest.js: 제안 내용을 main 레포의 suggestions/pending 폴더에 JSON 파일로 커밋
+ *    - /api/approve.js: 관리자 승인 시 templates.json에 반영하고, pending 파일 정리
+ *
+ * 4) Vercel 환경변수 설정
+ *    - GITHUB_TOKEN (repo write 권한 있는 PAT)
+ *
+ * 5) (선택) 관리자용 검토 페이지 구현
+ *    - suggestions/pending/*.json 목록 불러오기
+ *    - 체크박스 선택 후 "확인" 버튼 → /api/approve.js 호출
+ *
+ * 👉 이 흐름으로 "사용자 제안 → suggestions/pending에 저장 → 관리자 확인 후 templates.json 반영" 가능
+ */
 
-  async function submit(){
-    try{
-      setStatus("제출 중...");
-      const r=await fetch("/api/suggest-pr",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({secret,category,sub,tag,text,notes,submitter})});
-      const j=await r.json(); if(!r.ok) throw new Error(j.error||"failed");
-      setStatus(`✅ 제출 완료! PR 링크: ${j.pr_url}`);
-    }catch(e){ setStatus("❌ 오류: "+e.message); }
-  }
+export default function App() {
+  const [tab, setTab] = useState(() => {
+    try { return localStorage.getItem("ui_tab") || "physical"; } catch { return "physical"; }
+  });
+  useEffect(()=> { try { localStorage.setItem("ui_tab", tab); } catch {} }, [tab]);
+
+  // ⬇️ 제안 모달 상태
+  const [suggestOpen, setSuggestOpen] = useState(false);
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/30 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl border p-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold">템플릿 문구 제안</h2>
-          <button className="text-sm text-slate-600" onClick={onClose}>닫기</button>
+    <div className="min-h-screen bg-slate-50 text-slate-900 antialiased">
+      <Header tab={tab} onTab={setTab} onSuggest={()=>setSuggestOpen(true)} />
+      {/* 제안 모달 */}
+      <SuggestTemplateModal
+        open={suggestOpen}
+        onClose={()=>setSuggestOpen(false)}
+        // onSubmit 추가 필요 (위 가이드 참조)
+      />
+
+      <main className="mx-auto max-w-6xl p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 space-y-4">
+          {tab === "physical" && <PhysicalExamCard />}
+          {tab === "dental" && <DentalFindingsCard />}
+          {tab === "overall" && <OverallAssessmentCard />}
         </div>
 
-        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
-          <input className="border rounded-lg px-3 py-2" placeholder="대분류(예: 종합소견/신체검사)"
-            value={category} onChange={e=>setCategory(e.target.value)} />
-          <input className="border rounded-lg px-3 py-2" placeholder="중분류(선택)"
-            value={sub} onChange={e=>setSub(e.target.value)} />
-          <input className="border rounded-lg px-3 py-2 md:col-span-2" placeholder="태그(버튼 이름) *"
-            value={tag} onChange={e=>setTag(e.target.value)} />
-          <textarea className="border rounded-lg px-3 py-2 md:col-span-2 h-32" placeholder="내용(설명) *"
-            value={text} onChange={e=>setText(e.target.value)} />
-          <input className="border rounded-lg px-3 py-2" placeholder="제안자(선택)"
-            value={submitter} onChange={e=>setSubmitter(e.target.value)} />
-          <input className="border rounded-lg px-3 py-2" placeholder={`제출 시크릿 ${secretHint}`}
-            value={secret} onChange={e=>setSecret(e.target.value)} />
+        <div className="lg:col-span-1 space-y-4 lg:sticky top-24 self-start">
+          <OutputPanel />
+          <PolisherPanel />
+          <AboutPanel />
         </div>
-
-        <div className="mt-3 flex gap-2">
-          <button className="px-4 py-2 rounded-xl border" onClick={onClose}>취소</button>
-          <button className="px-4 py-2 rounded-xl text-white" style={{backgroundColor:"#0F5E9C"}} onClick={submit}>보내기</button>
-        </div>
-
-        <div className="mt-2 text-sm text-slate-600">{status}</div>
-      </div>
+      </main>
+      <Footer />
     </div>
   );
 }
+
+// ✅ 요약: UI 교체 → onSubmit 연결 → /api/suggest & /api/approve 추가 → GITHUB_TOKEN 세팅 → (선택) 관리자 페이지
