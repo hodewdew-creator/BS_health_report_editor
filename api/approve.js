@@ -1,55 +1,41 @@
-// /api/approve.js
+// /api/suggest.js
 import { Octokit } from "octokit";
-const owner="...", repo="...", branch="main";
+
+const owner = process.env.GH_OWNER;                 // ex) hodewdew-creator
+const repo  = process.env.GH_REPO;                  // ex) BS_health_report_editor
+const branch = process.env.GH_BRANCH || "main";     // 기본 main
+const basePath = process.env.SUGGESTIONS_DIR || "suggestions/pending";
 
 export default async function handler(req, res) {
   try {
-    if (req.method !== "POST") return res.status(405).json({error:"Method not allowed"});
-    const { files } = req.body || {}; // ["suggestions/pending/2025-...json", ...]
+    if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+    if (!process.env.GITHUB_TOKEN || !owner || !repo) {
+      return res.status(500).json({ error: "GITHUB_TOKEN/GH_OWNER/GH_REPO env 필요" });
+    }
+
+    const { target, major, minor, tag, text, proposer } = req.body || {};
+    if (!tag || !text || (target === "overall" && !major)) {
+      return res.status(400).json({ error: "필수값 누락(태그/설명, [종합소견은 대분류])" });
+    }
 
     const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
-    // 1) templates.json 읽기
-    const path = "src/data/templates.json"; // 프로젝트 경로에 맞춰 수정
-    const { data: file } = await octokit.request("GET /repos/{owner}/{repo}/contents/{path}", { owner, repo, path, ref: branch });
-    const shaTemplates = file.sha;
-    const templates = JSON.parse(Buffer.from(file.content, "base64").toString("utf8"));
+    const ts = new Date().toISOString().replace(/[:.]/g, "-");
+    const filename = `${ts}--${(tag || "tag").replace(/[^a-zA-Z0-9가-힣_-]/g, "_")}.json`;
+    const path = `${basePath}/${filename}`;
 
-    // 2) 제안들 읽어서 병합
-    for (const f of files) {
-      const { data: S } = await octokit.request("GET /repos/{owner}/{repo}/contents/{path}", { owner, repo, path: f, ref: branch });
-      const sug = JSON.parse(Buffer.from(S.content, "base64").toString("utf8"));
+    const payload = { target, major, minor, tag, text, proposer, ts, source: "webapp" };
 
-      if (sug.target === "physical") {
-        // 신체검사(육안검사) → templates.physical.looks에 push
-        templates.physical.looks.push({ title: sug.tag, text: sug.text });
-      } else {
-        // 종합소견 → templates.overall에 push
-        templates.overall.push({
-          cat: sug.major, sub: sug.minor || "기타", tag: sug.tag, text: sug.text
-        });
-      }
-    }
-
-    // 3) templates.json 업데이트
-    const newContent = Buffer.from(JSON.stringify(templates, null, 2)).toString("base64");
     await octokit.request("PUT /repos/{owner}/{repo}/contents/{path}", {
-      owner, repo, path, branch,
-      message: `feat(templates): apply ${files.length} suggestion(s)`,
-      content: newContent, sha: shaTemplates
+      owner, repo, path,
+      message: `chore(suggest): ${tag} (${target})`,
+      content: Buffer.from(JSON.stringify(payload, null, 2)).toString("base64"),
+      branch
     });
 
-    // 4) pending 파일들 정리 (삭제 or 이동)
-    for (const f of files) {
-      // 삭제 예시
-      const { data: F } = await octokit.request("GET /repos/{owner}/{repo}/contents/{path}", { owner, repo, path: f, ref: branch });
-      await octokit.request("DELETE /repos/{owner}/{repo}/contents/{path}", {
-        owner, repo, path: f, branch, message: `chore(suggest): remove ${f}`, sha: F.sha
-      });
-    }
-
-    res.json({ ok: true });
+    return res.status(200).json({ ok: true, path });
   } catch (e) {
-    console.error(e); res.status(500).json({ error: String(e.message || e) });
+    console.error(e);
+    return res.status(500).json({ error: String(e?.message || e) });
   }
 }
