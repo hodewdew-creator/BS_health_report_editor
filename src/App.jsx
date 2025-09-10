@@ -728,22 +728,20 @@ function OutputPanel(){
   );
 }
 
-function PolisherPanel(){
+function PolisherPanel() {
   const [input, setInput] = useState("");
   const [out, setOut] = useState("");
-  const [tone, setTone] = useState("중립");     // 중립, 친절, 간결
-  const [length, setLength] = useState("보통"); // 짧게, 보통, 자세히
-  const [format, setFormat] = useState("일반문장"); // 일반문장, 글머리표
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function polish(){
-    setLoading(true); setError("");
+  async function polish() {
+    setLoading(true); 
+    setError("");
     try {
       const resp = await fetch("/api/polish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: input, tone, length, format }),
+        body: JSON.stringify({ text: input }),
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data?.error || "unknown_error");
@@ -756,36 +754,23 @@ function PolisherPanel(){
   }
 
   return (
-    <Card title="AI 문장 다듬기" subtitle="톤/길이 선택 → 보호자에게 전달하기 좋은 문장으로 리라이팅" right={<CopyBtn text={out} />}>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <Field label="어투">
-          <select className="w-full rounded-xl border px-3 py-2" value={tone} onChange={e=>setTone(e.target.value)}>
-            <option>중립</option>
-            <option>친절</option>
-            <option>간결</option>
-          </select>
-        </Field>
-        <Field label="길이">
-          <select className="w-full rounded-xl border px-3 py-2" value={length} onChange={e=>setLength(e.target.value)}>
-            <option>짧게</option>
-            <option>보통</option>
-            <option>자세히</option>
-          </select>
-        </Field>
-        <Field label="형식">
-          <select className="w-full rounded-xl border px-3 py-2" value={format} onChange={e=>setFormat(e.target.value)}>
-            <option>일반문장</option>
-            <option>글머리표</option>
-          </select>
-        </Field>
-      </div>
-
-      <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+    <Card title="AI 문장 다듬기" right={<CopyBtn text={out} />}>
+      <div className="grid grid-cols-1 gap-3">
         <Field label="원문">
-          <TextArea value={input} onChange={setInput} rows={8} placeholder="신체검사/치과/종합 소견 중 다듬을 문구를 붙여넣으세요" />
+          <TextArea
+            value={input}
+            onChange={setInput}
+            rows={8}
+            placeholder="신체검사/치과/종합 소견 중 다듬을 문구를 붙여넣으세요"
+          />
         </Field>
         <Field label="결과">
-          <TextArea value={out} onChange={setOut} rows={8} placeholder="AI 리라이팅 결과" />
+          <TextArea
+            value={out}
+            onChange={setOut}
+            rows={8}
+            placeholder="AI 리라이팅 결과"
+          />
         </Field>
       </div>
 
@@ -793,16 +778,24 @@ function PolisherPanel(){
         <button
           onClick={polish}
           disabled={loading || !input.trim()}
-          className={"rounded-xl px-4 py-2 text-white " + (loading || !input.trim() ? "bg-slate-400" : "bg-slate-900 hover:bg-slate-800")}
+          className={
+            "rounded-xl px-4 py-2 text-white " +
+            (loading || !input.trim()
+              ? "bg-slate-400"
+              : "bg-slate-900 hover:bg-slate-800")
+          }
         >
           {loading ? "다듬는 중..." : "AI로 다듬기"}
         </button>
         <CopyBtn text={out} />
-        {error ? <span className="text-sm text-red-600">{error}</span> : null}
+        {error ? (
+          <span className="text-sm text-red-600">{error}</span>
+        ) : null}
       </div>
     </Card>
   );
 }
+
 
 function AboutPanel(){
   const [open, setOpen] = useState(false); // 기본 접힘
