@@ -774,24 +774,37 @@ function PolisherPanel() {
         </Field>
       </div>
 
-      <div className="mt-3 flex items-center gap-2">
-        <button
-          onClick={polish}
-          disabled={loading || !input.trim()}
-          className={
-            "rounded-xl px-4 py-2 text-white " +
-            (loading || !input.trim()
-              ? "bg-slate-400"
-              : "bg-slate-900 hover:bg-slate-800")
-          }
-        >
-          {loading ? "다듬는 중..." : "AI로 다듬기"}
-        </button>
-        <CopyBtn text={out} />
-        {error ? (
-          <span className="text-sm text-red-600">{error}</span>
-        ) : null}
-      </div>
+<div className="mt-3 flex items-center gap-2">
+  <button
+    onClick={() => polish("짧게")}
+    disabled={loading || !input.trim()}
+    className={
+      "rounded-xl px-4 py-2 text-white " +
+      (loading || !input.trim()
+        ? "bg-slate-400"
+        : "bg-slate-900 hover:bg-slate-800")
+    }
+  >
+    {loading ? "다듬는 중..." : "짧게 다듬기"}
+  </button>
+
+  <button
+    onClick={() => polish("길게")}
+    disabled={loading || !input.trim()}
+    className={
+      "rounded-xl px-4 py-2 text-white " +
+      (loading || !input.trim()
+        ? "bg-slate-400"
+        : "bg-slate-900 hover:bg-slate-800")
+    }
+  >
+    {loading ? "다듬는 중..." : "길게 다듬기"}
+  </button>
+
+  <CopyBtn text={out} />
+  {error ? <span className="text-sm text-red-600">{error}</span> : null}
+</div>
+
     </Card>
   );
 }
