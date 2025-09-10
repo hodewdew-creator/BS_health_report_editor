@@ -768,7 +768,7 @@ function PolisherPanel() {
           <TextArea
             value={out}
             onChange={setOut}
-            rows={8}
+            rows={4}
             placeholder="AI 리라이팅 결과"
           />
         </Field>
