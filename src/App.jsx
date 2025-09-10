@@ -734,24 +734,24 @@ function PolisherPanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function polish() {
-    setLoading(true); 
-    setError("");
-    try {
-      const resp = await fetch("/api/polish", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: input }),
-      });
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data?.error || "unknown_error");
-      setOut(data.result || "");
-    } catch (e) {
-      setError("다듬기 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-    } finally {
-      setLoading(false);
-    }
+async function polish(mode) {
+  setLoading(true); setError("");
+  try {
+    const resp = await fetch("/api/polish", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: input, length: mode }), // 짧게/길게 전달
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data?.error || "unknown_error");
+    setOut(data.result || "");
+  } catch (e) {
+    setError("다듬기 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+  } finally {
+    setLoading(false);
   }
+}
+
 
   return (
     <Card title="AI 문장 다듬기" right={<CopyBtn text={out} />}>
