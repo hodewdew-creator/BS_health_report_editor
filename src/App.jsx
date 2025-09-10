@@ -761,7 +761,7 @@ function PolisherPanel() {
             value={input}
             onChange={setInput}
             rows={4}
-            placeholder="신체검사/치과/종합 소견 중 다듬을 문구를 붙여넣으세요"
+            placeholder="검진결과 관련하여 키워드, 혹은 문장을 넣어주세요."
           />
         </Field>
         <Field label="결과">
@@ -769,7 +769,7 @@ function PolisherPanel() {
             value={out}
             onChange={setOut}
             rows={4}
-            placeholder="AI 리라이팅 결과"
+            placeholder="AI 다듬기 결과"
           />
         </Field>
       </div>
