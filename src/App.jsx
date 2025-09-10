@@ -760,7 +760,7 @@ function PolisherPanel() {
           <TextArea
             value={input}
             onChange={setInput}
-            rows={8}
+            rows={4}
             placeholder="신체검사/치과/종합 소견 중 다듬을 문구를 붙여넣으세요"
           />
         </Field>
