@@ -734,80 +734,87 @@ function PolisherPanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-async function polish(mode) {
-  setLoading(true); setError("");
-  try {
-    const resp = await fetch("/api/polish", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: input, length: mode }), // 짧게/길게 전달
-    });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data?.error || "unknown_error");
-    setOut(data.result || "");
-  } catch (e) {
-    setError("다듬기 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-  } finally {
-    setLoading(false);
+  async function polish(mode) {
+    setLoading(true);
+    setError("");
+    try {
+      const resp = await fetch("/api/polish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: input, length: mode }), // "짧게" or "길게"
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data?.error || "unknown_error");
+      setOut(data.result || "");
+    } catch (e) {
+      setError("다듬기 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setLoading(false);
+    }
   }
-}
-
 
   return (
-    <Card title="AI 문장 다듬기" right={<CopyBtn text={out} />}>
+    <Card
+      title="AI 문장 다듬기"
+      right={<CopyBtn text={out} />}
+    >
       <div className="grid grid-cols-1 gap-3">
         <Field label="원문">
           <TextArea
             value={input}
             onChange={setInput}
-            rows={4}
+            rows={6}
             placeholder="검진결과 관련하여 키워드, 혹은 문장을 넣어주세요."
           />
         </Field>
+
+        {/* 버튼을 원문/결과 사이에 배치 */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => polish("짧게")}
+            disabled={loading || !input.trim()}
+            className={
+              "rounded-xl px-4 py-2 text-white " +
+              (loading || !input.trim()
+                ? "bg-slate-400"
+                : "bg-slate-900 hover:bg-slate-800")
+            }
+          >
+            {loading ? "다듬는 중..." : "짧게 다듬기"}
+          </button>
+
+          <button
+            onClick={() => polish("길게")}
+            disabled={loading || !input.trim()}
+            className={
+              "rounded-xl px-4 py-2 text-white " +
+              (loading || !input.trim()
+                ? "bg-slate-400"
+                : "bg-slate-900 hover:bg-slate-800")
+            }
+          >
+            {loading ? "다듬는 중..." : "길게 다듬기"}
+          </button>
+        </div>
+
         <Field label="결과">
           <TextArea
             value={out}
             onChange={setOut}
-            rows={4}
+            rows={6}
             placeholder="AI 다듬기 결과"
           />
         </Field>
       </div>
 
-<div className="mt-3 flex items-center gap-2">
-  <button
-    onClick={() => polish("짧게")}
-    disabled={loading || !input.trim()}
-    className={
-      "rounded-xl px-4 py-2 text-white " +
-      (loading || !input.trim()
-        ? "bg-slate-400"
-        : "bg-slate-900 hover:bg-slate-800")
-    }
-  >
-    {loading ? "다듬는 중..." : "짧게 다듬기"}
-  </button>
-
-  <button
-    onClick={() => polish("길게")}
-    disabled={loading || !input.trim()}
-    className={
-      "rounded-xl px-4 py-2 text-white " +
-      (loading || !input.trim()
-        ? "bg-slate-400"
-        : "bg-slate-900 hover:bg-slate-800")
-    }
-  >
-    {loading ? "다듬는 중..." : "길게 다듬기"}
-  </button>
-
-  <CopyBtn text={out} />
-  {error ? <span className="text-sm text-red-600">{error}</span> : null}
-</div>
-
+      {/* 아래 복사버튼 제거, 에러메시지만 유지 */}
+      {error ? (
+        <div className="mt-2 text-sm text-red-600">{error}</div>
+      ) : null}
     </Card>
   );
 }
+
 
 
 function AboutPanel(){
