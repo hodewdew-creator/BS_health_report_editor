@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { listenAuth, loginWithGoogle, logout } from "./lib/firebase";
 import templates from "./data/templates.json";
 
 /**
@@ -18,28 +19,52 @@ const BRAND = { bg: "#0F5E9C", border: "#0F5E9C", text: "#ffffff" };
 // ===== Selected chip style (부드러운 노랑톤) =====
 const CHIP_ON_STYLE = { backgroundColor: "#FEF3C7", borderColor: "#FACC15", color: "#111827" }; // amber-100/400
 
-export default function App() {
+export default function App() {const [user, setUser] = useState(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const off = listenAuth(u => { setUser(u); setReady(true); });
+    return () => off();
+  }, []);
+
   const [tab, setTab] = useState(() => {
     try { return localStorage.getItem("ui_tab") || "physical"; } catch { return "physical"; }
   });
   useEffect(()=> { try { localStorage.setItem("ui_tab", tab); } catch {} }, [tab]);
 
+  if (!ready) return null;
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 antialiased">
-      <Header tab={tab} onTab={setTab} />
+      <Header tab={tab} onTab={setTab} user={user} onLogout={logout} />
+      {user ? (
       <main className="mx-auto max-w-6xl p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 space-y-4">
-          {tab === "physical" && <PhysicalExamCard />}
-          {tab === "dental" && <DentalFindingsCard />}
-          {tab === "overall" && <OverallAssessmentCard />}
+              <div className="lg:col-span-2 space-y-4">
+                {tab === "physical" && <PhysicalExamCard />}
+                {tab === "dental" && <DentalFindingsCard />}
+                {tab === "overall" && <OverallAssessmentCard />}
+              </div>
+      
+              <div className="lg:col-span-1 space-y-4 lg:sticky top-24 self-start">
+                <OutputPanel />
+                <PolisherPanel />
+                <AboutPanel />
+              </div>
+            </main>
+      ) : (
+        <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-12">
+          <div className="grid place-items-center">
+            <div className="rounded-2xl border border-slate-200 bg-white p-8 w-[92%] max-w-md text-center shadow-sm">
+              <p className="text-base text-slate-700">Google 로그인 후 이용 가능합니다.</p>
+              <button
+                onClick={loginWithGoogle}
+                className="mt-6 rounded-xl px-4 py-2 bg-slate-900 text-white hover:bg-slate-800"
+              >
+                Google로 로그인
+              </button>
+            </div>
+          </div>
         </div>
-
-        <div className="lg:col-span-1 space-y-4 lg:sticky top-24 self-start">
-          <OutputPanel />
-          <PolisherPanel />
-          <AboutPanel />
-        </div>
-      </main>
+      )}
       <Footer />
     </div>
   );
@@ -112,7 +137,7 @@ function CopyBtn({ text, label = "복사", className = "" }) {
 /*********************************
  * Header / Footer
  *********************************/
-function Header({ tab, onTab }) {
+function Header({ tab, onTab, user, onLogout }) {
   return (
     <header className="sticky top-0 z-10 backdrop-blur bg-slate-50/85 border-b border-slate-200">
       <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-3.5">
@@ -143,15 +168,29 @@ function Header({ tab, onTab }) {
             >
               초기화
             </a>
+
+            {user ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-600">{user.email}</span>
+                <button
+                  onClick={onLogout}
+                  className="h-7 px-3 rounded-lg border border-slate-300 text-xs text-slate-950 hover:bg-slate-50"
+                >
+                  로그아웃
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
 
         {/* 섹션 탭 */}
-        <div className="mt-3 flex items-center gap-2">
+        {user ? (
+          <div className="mt-3 flex items-center gap-2">
           <SegTab label="신체검사" active={tab==="physical"} onClick={()=> onTab("physical")} />
           <SegTab label="치과검사" active={tab==="dental"} onClick={()=> onTab("dental")} />
           <SegTab label="종합소견" active={tab==="overall"} onClick={()=> onTab("overall")} />
-        </div>
+                  </div>
+        ) : null}
       </div>
     </header>
   );
@@ -586,7 +625,8 @@ function OverallAssessmentCard(){
       </div>
 
       {/* 검색 + 결과수 */}
-      <div className="mt-3 flex items-center gap-2">
+      {user ? (
+          <div className="mt-3 flex items-center gap-2">
         <input
           className="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-950"
           placeholder="태그/내용 검색"
