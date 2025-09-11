@@ -159,14 +159,34 @@ function Header({ tab, onTab, user, onLogout }) {
           </div>
 
           <div className="flex items-center gap-3">
+
             <a
-              href="#"
-              onClick={(e)=>{ e.preventDefault(); localStorage.clear(); location.reload(); }}
-              className="text-xs font-bold text-slate-900 hover:text-slate-950"
-              title="모든 데이터(로컬저장) 초기화"
-            >
-              초기화
-            </a>
+  href="#"
+  onClick={(e) => {
+    e.preventDefault();
+    // ✅ 우리 앱 데이터만 정리 (Firebase auth 키는 건드리지 않음)
+    const APP_KEYS = [
+      "vetreport_phys",
+      "vetreport_dental",
+      "vetreport_overall",
+      "vetreport_output",
+      // 필요시 "ui_tab" 추가 가능
+    ];
+    try {
+      APP_KEYS.forEach(k => localStorage.removeItem(k));
+    } catch {}
+
+    // UI 갱신
+    try { window.dispatchEvent(new Event("vetreport-change")); } catch {}
+    location.reload();
+  }}
+  className="text-xs font-bold text-slate-900 hover:text-slate-950"
+  title="모든 데이터(로컬저장) 초기화"
+>
+  초기화
+</a>
+
+            
 
             {user ? (
               <div className="flex items-center gap-2">
