@@ -21,3 +21,4 @@ export async function loginWithGoogle() {
 
 export function logout() { return signOut(auth); }
 export function listenAuth(cb) { return onAuthStateChanged(auth, cb); }
+
