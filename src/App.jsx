@@ -362,29 +362,6 @@ function PhysicalExamCard(){
 
   return (
     <Card title="① 신체검사" subtitle="BCS 및 신체검사 소견 입력 → 자동 문구" right={<CopyBtn text={text} />}>
-  const [phys, setPhys] = useState(loadLS(key.phys, defaultPhys));
-  const [hover, setHover] = useState(""); // 호버 프리뷰
-  const text = useMemo(()=> makePhysText(phys), [phys]);
-
-  // ⬇️ 추가: 아직 어떤 육안검사도 선택 안 되어 있으면 '정상'을 기본 체크(1회)
-  useEffect(() => {
-    const hasAny = phys?.looks && Object.values(phys.looks).some(Boolean);
-    const hasNormalTag = PHYS_LOOKS.some(p => p.title === "정상");
-    if (!hasAny && hasNormalTag) {
-      setPhys(prev => ({
-        ...prev,
-        looks: { ...(prev.looks || {}), "정상": true },
-      }));
-    }
-    // mount 시 한 번만 실행
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // 변경사항 저장 + 우측 패널 갱신 이벤트
-  useEffect(()=> { saveLS(key.phys, phys); emitChange(); }, [phys]);
-
-  return (
-    <Card title="① 신체검사" subtitle="BCS 및 신체검사 소견 입력 → 자동 문구" right={<CopyBtn text={text} />}>
       <Field label={`BCS: ${phys.bcs}/9`}>
         <input
           type="range"
@@ -400,7 +377,7 @@ function PhysicalExamCard(){
       </Field>
 
       <div className="mt-4">
-        <div className="mb-1 text-sm font-semibold text-slate-950">육안검사 선택</div>
+        <div className="mb-1 text-sm text-slate-950 font-semibold">육안검사 선택</div>
         <div className="flex flex-wrap gap-2">
           {PHYS_LOOKS.map((opt) => {
             const on = !!(phys.looks && phys.looks[opt.title]);
@@ -688,7 +665,7 @@ function OverallAssessmentCard(){
                       key={row._id}
                       onMouseEnter={()=> setHover(row.text || "")}
                       onMouseLeave={()=> setHover("")}
-                      className={`px-2 py-1 text-xs rounded-lg border active:scale-[.98] ${picked ? CHIP.on : CHIP.off}`}
+                      className={`px-2 py-1 text-xs rounded-lg border active:scale-[.98] ${picked ? CHIP_ON_STYLE : "bg-white text-slate-950 border-slate-300 hover:bg-slate-50"}`}
                       style={picked ? CHIP_ON_STYLE : {}}
                       title={`${row.cat} · ${row.sub}`}
                       onClick={()=> toggleTag(String(row._id))}
@@ -905,4 +882,3 @@ function AboutPanel(){
     </Card>
   );
 }
-
