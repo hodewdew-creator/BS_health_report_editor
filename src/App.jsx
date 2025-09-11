@@ -755,7 +755,7 @@ function PolisherPanel() {
 
   return (
 <Card
-  title="GPT 소견 다듬기"
+  title="AI 소견 다듬기"
   right={
     <div className="flex items-center gap-2 whitespace-nowrap">
       {/* CopyBtn이 className 지원 시 */}
@@ -828,12 +828,12 @@ function AboutPanel(){
       {open ? (
         <>
           <ul className="list-disc pl-5 space-y-1 text-sm text-slate-950">
-            <li>각종 내용 템플릿 수정은 src/data/templates.json</li>
+            <li>AI 소견 다듬기는 GPT 4o를 사용합니다.</li>
           </ul>
           <div className="mt-3 text-sm text-slate-950">
             <b>다음 단계 제안</b>
             <ol className="list-decimal pl-5 mt-1 space-y-1">
-              <li> GPT 문장 다듬기 , 키워드 입력시 소견 작성 구현</li>
+              <li> 완성본입니다. 차후에는 다양한 소견 템플릿만 추가 예정!</li>
 
             </ol>
           </div>
