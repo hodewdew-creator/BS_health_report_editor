@@ -754,19 +754,28 @@ function PolisherPanel() {
   }
 
   return (
-    <Card
-      title="GPT 소견 다듬기"
-      right={
-        <div className="inline-flex items-center gap-2">
+<Card
+  title="GPT 소견 다듬기"
+  right={
+    <div className="flex items-center gap-2 whitespace-nowrap">
+      {/* CopyBtn이 className 지원 시 */}
+      {"className" in CopyBtn.prototype ? (
+        <CopyBtn text={out} className="h-9 px-3 text-sm leading-none" />
+      ) : (
+        // 지원 안 하면 래퍼로 강제 높이 맞춤
+        <div className="h-9 inline-flex items-center">
           <CopyBtn text={out} />
-          <button
-            onClick={() => setOpen(o => !o)}
-            className="inline-flex h-9 px-3 rounded-xl border border-slate-300 text-sm hover:bg-slate-50"
-            aria-expanded={open}
-          >
-            {open ? "접기" : "펼치기"}
-          </button>
         </div>
+      )}
+
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="inline-flex h-9 px-3 items-center justify-center rounded-xl border border-slate-300 text-sm leading-none hover:bg-slate-50"
+        aria-expanded={open}
+      >
+        {open ? "접기" : "펼치기"}
+      </button>
+    </div>
       }
     >
       {open ? (
