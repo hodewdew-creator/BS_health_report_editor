@@ -1,17 +1,13 @@
+// src/App.jsx (with Google Login Gate)
 import React, { useEffect, useMemo, useState } from "react";
-import { listenAuth, loginWithGoogle, logout } from "./lib/firebase";
 import templates from "./data/templates.json";
+import { listenAuth, loginWithGoogle, logout } from "./lib/firebase";
 
 /**
- * App.jsx — UI Polish v5.1
- * - 태그 선택 칩: 옅은 노랑(amber) 스타일
- * - 종합소견: CBC/Chem → "혈액검사" 통합, 중분류 오른쪽에 태그(한 줄), 모바일에서는 wrap
- * - 글씨 가독성 강화(slate-950/900)
- * - AI 문장 다듬기: 부제 "(미구현상태입니다)"
- * - 최종 검진 소견: 제목/부제 수정, 버튼 정렬/동일 높이
- * - Output/Help 기본 접힘 유지
- * - Header: 로고 2배, 제목 변경/크기 업, MVP 제거, '초기화' bold
- * - 종합소견 추가안내문구 placeholder 제거
+ * App.jsx — UI Polish v5.1 (+ Google Login Gate)
+ * - 로그인 전: 헤더만 보이고 본문 영역은 로그인 카드 표시
+ * - 로그인 후: 기존 본문 그대로 표시, 헤더 우측에 이메일/로그아웃
+ * - 나머지 UI/로직은 기존과 동일
  */
 
 // ===== Brand color (탭/주요 버튼) =====
@@ -19,9 +15,10 @@ const BRAND = { bg: "#0F5E9C", border: "#0F5E9C", text: "#ffffff" };
 // ===== Selected chip style (부드러운 노랑톤) =====
 const CHIP_ON_STYLE = { backgroundColor: "#FEF3C7", borderColor: "#FACC15", color: "#111827" }; // amber-100/400
 
-export default function App() {const [user, setUser] = useState(null);
+export default function App() {
+  // 🔐 로그인 상태
+  const [user, setUser] = useState(null);
   const [ready, setReady] = useState(false);
-
   useEffect(() => {
     const off = listenAuth(u => { setUser(u); setReady(true); });
     return () => off();
@@ -32,24 +29,26 @@ export default function App() {const [user, setUser] = useState(null);
   });
   useEffect(()=> { try { localStorage.setItem("ui_tab", tab); } catch {} }, [tab]);
 
-  if (!ready) return null;
+  if (!ready) return null; // 초기 깜빡임 방지
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 antialiased">
       <Header tab={tab} onTab={setTab} user={user} onLogout={logout} />
+
       {user ? (
-      <main className="mx-auto max-w-6xl p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2 space-y-4">
-                {tab === "physical" && <PhysicalExamCard />}
-                {tab === "dental" && <DentalFindingsCard />}
-                {tab === "overall" && <OverallAssessmentCard />}
-              </div>
-      
-              <div className="lg:col-span-1 space-y-4 lg:sticky top-24 self-start">
-                <OutputPanel />
-                <PolisherPanel />
-                <AboutPanel />
-              </div>
-            </main>
+        <main className="mx-auto max-w-6xl p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 space-y-4">
+            {tab === "physical" && <PhysicalExamCard />}
+            {tab === "dental" && <DentalFindingsCard />}
+            {tab === "overall" && <OverallAssessmentCard />}
+          </div>
+
+          <div className="lg:col-span-1 space-y-4 lg:sticky top-24 self-start">
+            <OutputPanel />
+            <PolisherPanel />
+            <AboutPanel />
+          </div>
+        </main>
       ) : (
         <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 py-12">
           <div className="grid place-items-center">
@@ -65,6 +64,7 @@ export default function App() {const [user, setUser] = useState(null);
           </div>
         </div>
       )}
+
       <Footer />
     </div>
   );
@@ -159,7 +159,6 @@ function Header({ tab, onTab, user, onLogout }) {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* MVP 배지 제거 */}
             <a
               href="#"
               onClick={(e)=>{ e.preventDefault(); localStorage.clear(); location.reload(); }}
@@ -183,13 +182,13 @@ function Header({ tab, onTab, user, onLogout }) {
           </div>
         </div>
 
-        {/* 섹션 탭 */}
+        {/* 섹션 탭: 로그인 후에만 */}
         {user ? (
           <div className="mt-3 flex items-center gap-2">
-          <SegTab label="신체검사" active={tab==="physical"} onClick={()=> onTab("physical")} />
-          <SegTab label="치과검사" active={tab==="dental"} onClick={()=> onTab("dental")} />
-          <SegTab label="종합소견" active={tab==="overall"} onClick={()=> onTab("overall")} />
-                  </div>
+            <SegTab label="신체검사" active={tab==="physical"} onClick={()=> onTab("physical")} />
+            <SegTab label="치과검사" active={tab==="dental"} onClick={()=> onTab("dental")} />
+            <SegTab label="종합소견" active={tab==="overall"} onClick={()=> onTab("overall")} />
+          </div>
         ) : null}
       </div>
     </header>
@@ -340,6 +339,29 @@ function makePhysText(p){
 }
 
 function PhysicalExamCard(){
+  const [phys, setPhys] = useState(loadLS(key.phys, defaultPhys));
+  const [hover, setHover] = useState(""); // 호버 프리뷰
+  const text = useMemo(()=> makePhysText(phys), [phys]);
+
+  // ⬇️ 추가: 아직 어떤 육안검사도 선택 안 되어 있으면 '정상'을 기본 체크(1회)
+  useEffect(() => {
+    const hasAny = phys?.looks && Object.values(phys.looks).some(Boolean);
+    const hasNormalTag = PHYS_LOOKS.some(p => p.title === "정상");
+    if (!hasAny && hasNormalTag) {
+      setPhys(prev => ({
+        ...prev,
+        looks: { ...(prev.looks || {}), "정상": true },
+      }));
+    }
+    // mount 시 한 번만 실행
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 변경사항 저장 + 우측 패널 갱신 이벤트
+  useEffect(()=> { saveLS(key.phys, phys); emitChange(); }, [phys]);
+
+  return (
+    <Card title="① 신체검사" subtitle="BCS 및 신체검사 소견 입력 → 자동 문구" right={<CopyBtn text={text} />}>
   const [phys, setPhys] = useState(loadLS(key.phys, defaultPhys));
   const [hover, setHover] = useState(""); // 호버 프리뷰
   const text = useMemo(()=> makePhysText(phys), [phys]);
@@ -625,8 +647,7 @@ function OverallAssessmentCard(){
       </div>
 
       {/* 검색 + 결과수 */}
-      {user ? (
-          <div className="mt-3 flex items-center gap-2">
+      <div className="mt-3 flex items-center gap-2">
         <input
           className="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-950"
           placeholder="태그/내용 검색"
